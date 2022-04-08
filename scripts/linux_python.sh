@@ -170,7 +170,57 @@ install_pymod(){
 	return 0
 	
 }
-
+install_fontconfig(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir ncores load_env
+	
+	install_args $@ -p fontconfig -d 2.13.96; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://www.freedesktop.org/software/fontconfig
+	url=$url/release/fontconfig-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/bin/fc-cat ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		[ ! -f $inst_dir/lib/pkgconfig/fontconfig.pc ] \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		pkg-config --exists --print-errors fontconfig >&2 \
+			|| return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags fontconfig`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs fontconfig`"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+		libxml2 freetype gperf ncurses readline bzip2 \
+		zlib Python)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir --enable-libxml2 >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
 
 
 
