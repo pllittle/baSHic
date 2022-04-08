@@ -1255,7 +1255,7 @@ install_cmake(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -1304,7 +1304,7 @@ install_fontconfig(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc libxml2 freetype gperf)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool libxml2 freetype gperf)
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -1346,7 +1346,7 @@ install_gperf(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
 	eval $cmd >&2 || return 1
 	
 	# Install
