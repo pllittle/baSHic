@@ -688,7 +688,7 @@ install_xz(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -757,7 +757,7 @@ install_bzip2(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -810,7 +810,7 @@ install_pcre2(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -859,7 +859,7 @@ install_zlib(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -905,7 +905,7 @@ install_curl(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc zlib)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool zlib)
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -953,7 +953,7 @@ install_libxml2(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc zlib xz)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool zlib xz)
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -1002,7 +1002,7 @@ install_libpng(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -1046,7 +1046,7 @@ install_freetype(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -1089,7 +1089,7 @@ install_pixman(){
 	clear_env
 	ncores=`get_ncores`; [ -z $ncores ] && ncores=1
 	local CPPFLAGS LDFLAGS
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -1136,7 +1136,7 @@ install_cairo(){
 	ncores=`get_ncores`
 	[ -z $ncores ] && ncores=1
 	local CPPFLAGS LDFLAGS # CPPFLAGS=; LDFLAGS=;
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc \
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		libpng freetype pixman)
 	eval $cmd >&2 || return 1
 	
