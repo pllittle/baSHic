@@ -1229,6 +1229,139 @@ install_cairo(){
 	return $status
 	
 }
+install_cmake(){
+	local version v1 pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir load_env
+	
+	install_args $@ -p cmake -d 3.20.3; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://github.com/Kitware/CMake/releases
+	url=${url}/download/v${version}/cmake-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/bin/cmake ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		update_env -e PATH -a "$inst_dir/bin"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/bootstrap"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_fontconfig(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir ncores load_env
+	
+	install_args $@ -p fontconfig -d 2.13.96; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://www.freedesktop.org/software/fontconfig
+	url=$url/release/fontconfig-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/bin/fc-cat ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		[ ! -f $inst_dir/lib/pkgconfig/fontconfig.pc ] \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		pkg-config --exists --print-errors fontconfig >&2 \
+			|| return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags fontconfig`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs fontconfig`"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libxml2 freetype gperf)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir --enable-libxml2 >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_gperf(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir ncores load_env
+	
+	install_args $@ -p gperf -d 3.1; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=http://ftp.gnu.org/pub/gnu/gperf/gperf-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/bin/gperf ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
 
 
 
