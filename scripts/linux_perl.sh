@@ -1,6 +1,7 @@
 #!/bin/sh
 
-[ ! -z $src_perl ] && [ $src_perl -eq 1 ] && return 0
+[ ! -z $src_perl ] && [ $src_perl -eq 1 ] \
+	&& return 0
 
 for fn in install; do
 	. $HOME/github/baSHic/scripts/$fn.sh

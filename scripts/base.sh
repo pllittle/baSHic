@@ -1,6 +1,8 @@
 #!/bin/sh
 
-[ ! -z $src_bash ] && [ $src_bash -eq 1 ] && return 0
+[ ! -z $src_bash ] \
+	&& [ $src_bash -eq 1 ] \
+	&& return 0
 
 for fn in colors; do
 	. $HOME/github/baSHic/scripts/$fn.sh
@@ -28,11 +30,6 @@ new_dosUnix(){
 	dos2unix $@ 2> /dev/null > /dev/null
 }
 smart_sed(){
-	# Inputs: 
-	# 	1) template filename
-	#		2) output filename
-	#		3) string pattern for substitution, use "old|new" format
-	
 	local cmd input_fn output_fn sub subs chost
 	local cnt=0
 	

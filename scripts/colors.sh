@@ -1,6 +1,8 @@
 #!/bin/sh
 
-[ ! -z $src_color ] && [ $src_color -eq 1 ] && return 0
+[ ! -z $src_color ] \
+	&& [ $src_color -eq 1 ] \
+	&& return 0
 
 for fn in setup; do
 	. $HOME/github/baSHic/scripts/$fn.sh

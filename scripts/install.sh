@@ -1,6 +1,7 @@
 #!/bin/sh
 
-[ ! -z $src_install ] && [ $src_install -eq 1 ] && return 0
+[ ! -z $src_install ] && [ $src_install -eq 1 ] \
+	&& return 0
 
 for fn in base colors getEnv; do
 	. $HOME/github/baSHic/scripts/$fn.sh
@@ -564,7 +565,7 @@ install_libtool(){
 }
 install_tex(){
 	# echo "check this!" >&2 && return 1
-	local version v1 apps_dir url inst_dir
+	local version v1 apps_dir url inst_dir work_dir
 	local curr_date curr_yr resp load_env
 	
 	load_env=0
@@ -586,9 +587,8 @@ install_tex(){
 	done
 	
 	[ -z $apps_dir ] && apps_dir=$HOME/apps
-	
+	work_dir=$apps_dir/downloads
 	curr_yr=`date +%Y`
-	# curr_yr=2021
 	inst_dir=$apps_dir/texlive
 	
 	# Load environment
@@ -598,6 +598,8 @@ install_tex(){
 		
 		echo -e "Loading texlive environment ..." >&2
 		update_env -e PATH -a "$inst_dir/$curr_yr/bin/x86_64-linux"
+		export MANPATH=$inst_dir/$curr_yr/texmf-dist/doc/man
+		export INFOPATH=$inst_dir/$curr_yr/texmf-dist/doc/info
 		return 0
 	fi
 	
@@ -624,7 +626,7 @@ install_tex(){
 	
 	url=http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
 	
-	cd ~/downloads
+	cd $work_dir
 	[ ! -f install-tl-unx.tar.gz ] && wget $url >&2
 	tar -zxvf install-tl-unx.tar.gz >&2
 	curr_date=$(ls | grep -v "tar.gz" | grep "install-tl" | cut -d '-' -f3)
@@ -632,7 +634,7 @@ install_tex(){
 	echo -e "Notes:\n\t1) Install everything \n\t2) Set TEXDIR to $inst_dir/$curr_yr" >&2
 	sleep 2
 	$apps_dir/perl-$version/bin/perl install-tl >&2
-	cd ~/downloads
+	cd $work_dir
 	rm -rf install-tl-unx.tar.gz install-tl-$curr_date
 	
 }
