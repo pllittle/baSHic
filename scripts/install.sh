@@ -1304,7 +1304,8 @@ install_fontconfig(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool libxml2 freetype gperf)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+		libxml2 freetype gperf Python)
 	eval $cmd >&2 || return 1
 	
 	# Install
