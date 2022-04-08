@@ -71,7 +71,7 @@ get_host(){
 [ -z "$curr_host" ] && curr_host=$(get_host)
 
 update_env(){
-	local path_fn env_var addpaths rmpaths path
+	local path_fn env_var addpaths rmpaths path cmd
 	local input_var out_var cnt add_stat reset_path
 	reset_path=0
 	
@@ -151,22 +151,32 @@ update_env(){
 	fi
 	
 	# Write to path_fn
-	if [ "$env_var" == "PATH" ]; then
-		input_var=$PATH
-	elif [ "$env_var" == "LD_LIBRARY_PATH" ]; then
-		input_var=$LD_LIBRARY_PATH
-	elif [ "$env_var" == "PYTHONPATH" ]; then
-		input_var=$PYTHONPATH
-	elif [ "$env_var" == "LIBRARY_PATH" ]; then
-		input_var=$LIBRARY_PATH
-	elif [ "$env_var" == "PKG_CONFIG_PATH" ]; then
-		input_var=$PKG_CONFIG_PATH
-	elif [ "$env_var" == "CPATH" ]; then
-		input_var=$CPATH
+	if check_array $env_var PATH LD_LIBRARY_PATH PYTHONPATH \
+		LIBRARY_PATH PKG_CONFIG_PATH CPATH; then
+		cmd="input_var=\$$env_var"
+		eval $cmd
 	else
 		print_notOpt
 		return 1
 	fi
+	
+	# if [ "$env_var" == "PATH" ]; then
+		# input_var=$PATH
+	# elif [ "$env_var" == "LD_LIBRARY_PATH" ]; then
+		# input_var=$LD_LIBRARY_PATH
+	# elif [ "$env_var" == "PYTHONPATH" ]; then
+		# input_var=$PYTHONPATH
+	# elif [ "$env_var" == "LIBRARY_PATH" ]; then
+		# input_var=$LIBRARY_PATH
+	# elif [ "$env_var" == "PKG_CONFIG_PATH" ]; then
+		# input_var=$PKG_CONFIG_PATH
+	# elif [ "$env_var" == "CPATH" ]; then
+		# input_var=$CPATH
+	# else
+		# print_notOpt
+		# return 1
+	# fi
+	
 	echo $input_var | sed 's|:|\n|g' \
 		| sed "s|~|$HOME|g" | sed '/^$/d' \
 		| uniq > $path_fn
@@ -212,22 +222,31 @@ update_env(){
 	[ $add_stat -eq 0 -a $rm_stat -eq 0 ] && return 0
 	
 	# Update env_var
-	if [ "$env_var" == "PATH" ]; then
-		export PATH=$out_var
-	elif [ "$env_var" == "LD_LIBRARY_PATH" ]; then
-		export LD_LIBRARY_PATH=$out_var
-	elif [ "$env_var" == "PYTHONPATH" ]; then
-		export PYTHONPATH=$out_var
-	elif [ "$env_var" == "LIBRARY_PATH" ]; then
-		export LIBRARY_PATH=$out_var
-	elif [ "$env_var" == "PKG_CONFIG_PATH" ]; then
-		export PKG_CONFIG_PATH=$out_var
-	elif [ "$env_var" == "CPATH" ]; then
-		export CPATH=$out_var
+	if check_array $env_var PATH LD_LIBRARY_PATH PYTHONPATH \
+		LIBRARY_PATH PKG_CONFIG_PATH CPATH; then
+		cmd="export $env_var=$out_var"
+		eval $cmd
 	else
 		print_notOpt
 		return 1
 	fi
+	
+	# if [ "$env_var" == "PATH" ]; then
+		# export PATH=$out_var
+	# elif [ "$env_var" == "LD_LIBRARY_PATH" ]; then
+		# export LD_LIBRARY_PATH=$out_var
+	# elif [ "$env_var" == "PYTHONPATH" ]; then
+		# export PYTHONPATH=$out_var
+	# elif [ "$env_var" == "LIBRARY_PATH" ]; then
+		# export LIBRARY_PATH=$out_var
+	# elif [ "$env_var" == "PKG_CONFIG_PATH" ]; then
+		# export PKG_CONFIG_PATH=$out_var
+	# elif [ "$env_var" == "CPATH" ]; then
+		# export CPATH=$out_var
+	# else
+		# print_notOpt
+		# return 1
+	# fi
 	
 }
 get_ncores(){
@@ -240,7 +259,7 @@ get_ncores(){
 }
 clear_env(){
 	check_array $curr_host hutch && ml purge
-	unset PKG_CONFIG_PATH
+	unset PKG_CONFIG_PATH PYTHONPATH
 	unset CPPFLAGS LDFLAGS CC CXX CPATH
 	unset PERL5LIB PERL_LOCAL_LIB_ROOT PERL_MB_OPT PERL_MM_OPT
 	update_env -n

@@ -8,7 +8,7 @@ for fn in install; do
 done
 
 # Python Functions
-install_python(){
+install_Python(){
 	local version v1 pkg pkg_ver apps_dir cmd status
 	local url inst_dir down_dir load_env
 	
@@ -33,6 +33,8 @@ install_python(){
 		done
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		update_env -e LIBRARY_PATH -a "$inst_dir/lib"
+		update_env -e CPATH -a "$inst_dir/include"
 		return 0
 	fi
 	
@@ -45,15 +47,9 @@ install_python(){
 	clear_env
 	local PYTHONPATH PYTHONHOME
 	local CPPFLAGS LDFLAGS
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+		ncurses readline bzip2 zlib)
 	eval $cmd >&2 || return 1
-	
-	# install_gcc -a $apps_dir -e \
-		# && install_ncurses -a $apps_dir -e \
-		# && install_readline -a $apps_dir -e \
-		# && install_xz -a $apps_dir -e \
-		# && install_bzip2 -a $apps_dir -e \
-		# || return 1
 	
 	# Install
 	cmd="$down_dir/configure"
