@@ -37,20 +37,22 @@ install_python(){
 	
 	extract_url -u $url -a $apps_dir -s $pkg_ver
 	[ $? -eq 1 ] && return 0
-	[ -d $down_dir ] && rm -rf $down_dir
-	mv $inst_dir ~/downloads/
+	new_mkdir $inst_dir
 	cd $inst_dir
 	
 	# Set environment
 	clear_env
 	local PYTHONPATH PYTHONHOME
 	local CPPFLAGS LDFLAGS
-	install_gcc -a $apps_dir -e \
-		&& install_ncurses -a $apps_dir -e \
-		&& install_readline -a $apps_dir -e \
-		&& install_xz -a $apps_dir -e \
-		&& install_bzip2 -a $apps_dir -e \
-		|| return 1
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+	eval $cmd >&2 || return 1
+	
+	# install_gcc -a $apps_dir -e \
+		# && install_ncurses -a $apps_dir -e \
+		# && install_readline -a $apps_dir -e \
+		# && install_xz -a $apps_dir -e \
+		# && install_bzip2 -a $apps_dir -e \
+		# || return 1
 	
 	# Install
 	cmd="$down_dir/configure"
