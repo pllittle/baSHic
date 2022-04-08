@@ -24,7 +24,7 @@ install_R(){
 	clear_env
 	local CPPFLAGS LDFLAGS
 	ncores=`get_ncores`
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc perl tex libtool \
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc tex libtool \
 		ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
 		freetype pixman cairo gperf cmake Python fontconfig)
 	eval $cmd >&2 || return 1
