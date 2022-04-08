@@ -152,7 +152,7 @@ update_env(){
 	
 	# Write to path_fn
 	if check_array $env_var PATH LD_LIBRARY_PATH PYTHONPATH \
-		LIBRARY_PATH PKG_CONFIG_PATH CPATH; then
+		LIBRARY_PATH PKG_CONFIG_PATH CPATH MANPATH; then
 		cmd="input_var=\$$env_var"
 		eval $cmd
 	else
@@ -223,7 +223,7 @@ update_env(){
 	
 	# Update env_var
 	if check_array $env_var PATH LD_LIBRARY_PATH PYTHONPATH \
-		LIBRARY_PATH PKG_CONFIG_PATH CPATH; then
+		LIBRARY_PATH PKG_CONFIG_PATH CPATH MANPATH; then
 		cmd="export $env_var=$out_var"
 		eval $cmd
 	else
@@ -258,10 +258,18 @@ get_ncores(){
 	echo $ncores
 }
 clear_env(){
+	local env_var cmd
+	
 	check_array $curr_host hutch && ml purge
-	unset PKG_CONFIG_PATH PYTHONPATH
-	unset CPPFLAGS LDFLAGS CC CXX CPATH
-	unset PERL5LIB PERL_LOCAL_LIB_ROOT PERL_MB_OPT PERL_MM_OPT
+	cmd="unset"
+	for env_var in PKG_CONFIG_PATH PYTHONPATH CPPFLAGS \
+		LDFLAGS CC CXX CPATH PERL5LIB PERL_LOCAL_LIB_ROOT \
+		PERL_MB_OPT PERL_MM_OPT; do
+		
+		cmd="$cmd $env_var"
+	done
+	
+	eval $cmd
 	update_env -n
 }
 

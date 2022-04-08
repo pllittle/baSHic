@@ -35,6 +35,7 @@ install_Python(){
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		update_env -e LIBRARY_PATH -a "$inst_dir/lib"
 		update_env -e CPATH -a "$inst_dir/include"
+		update_env -e MANPATH -a "$inst_dir/share/man"
 		return 0
 	fi
 	
@@ -45,7 +46,7 @@ install_Python(){
 	
 	# Set environment
 	clear_env
-	local PYTHONPATH PYTHONHOME
+	local PYTHONHOME
 	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		ncurses readline bzip2 zlib)
