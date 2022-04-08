@@ -24,17 +24,9 @@ install_R(){
 	clear_env
 	local CPPFLAGS LDFLAGS
 	ncores=`get_ncores`
-	[ -z $ncores ] && ncores=1
-	
-	# Notes
-	# On longleaf, use root's bzip2, my local install causes problems
-	
-	# Set environment
-	clear_env
-	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc tex libtool \
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc perl tex libtool \
 		ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
-		freetype pixman cairo gperf fontconfig cmake)
+		freetype pixman cairo gperf Python fontconfig cmake)
 	eval $cmd >&2 || return 1
 	# && install_ICU -a $apps_dir -e
 	# && install_anaconda -a $apps_dir -e

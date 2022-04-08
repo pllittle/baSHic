@@ -66,7 +66,6 @@ install_Python(){
 	
 }
 install_pip(){
-	# echo "Debug code" >&2 && return 1
 	local apps_dir py_dir
 	local url=https://bootstrap.pypa.io/pip/get-pip.py
 	local inst_fn=get-pip.py
