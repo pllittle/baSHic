@@ -2,7 +2,7 @@
 
 [ ! -z $src_R ] && [ $src_R -eq 1 ] && return 0
 
-for fn in install linux_python; do
+for fn in install linux_perl linux_python; do
 	. $HOME/github/baSHic/scripts/$fn.sh
 done
 
