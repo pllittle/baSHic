@@ -563,7 +563,7 @@ install_libtool(){
 	
 }
 install_tex(){
-	echo "check this!" >&2 && return 1
+	# echo "check this!" >&2 && return 1
 	local version v1 apps_dir url inst_dir
 	local curr_date curr_yr resp load_env
 	
