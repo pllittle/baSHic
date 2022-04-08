@@ -198,17 +198,14 @@ install_args(){
 				shift
 				pkg="$1"
 				;;
-			-w | --work_dir )
-				shift
-				work_dir="$1"
-				;;
 		esac
 		shift
 	done
 	
 	[ -z $pkg ] && echo "Add -p <package>" >&2 && return 1
 	[ -z $apps_dir ] && apps_dir=$HOME/apps
-	[ -z $work_dir ] && work_dir=$HOME/downloads
+	
+	work_dir=$apps_dir/downloads
 	new_mkdir $work_dir
 	
 	if [ -z $version ]; then
