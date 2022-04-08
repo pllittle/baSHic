@@ -93,8 +93,8 @@ extract_url(){
 	
 	inst_dir=$apps_dir/$soft_dir
 	[ `install_prompt $inst_dir` == "cancel" ] && return 1
-	new_mkdir $HOME/downloads
-	cd $HOME/downloads
+	new_mkdir $apps_dir/downloads
+	cd $apps_dir/downloads
 	
 	# Check url exists
 	echo -e "${purple}Checking URL exists ...${NC}" >&2
