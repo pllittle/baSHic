@@ -1,6 +1,6 @@
 # baSHic
 
-Welcome to this repo! The scripts contained here augmented basic bash commands. 
+Welcome to this repo! The scripts contained here augment basic bash commands. 
 
 ## colors.sh
 
