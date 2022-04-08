@@ -2,7 +2,7 @@
 
 [ ! -z $src_R ] && [ $src_R -eq 1 ] && return 0
 
-for fn in install; do
+for fn in install linux_python; do
 	. $HOME/github/baSHic/scripts/$fn.sh
 done
 
@@ -26,7 +26,7 @@ install_R(){
 	ncores=`get_ncores`
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc perl tex libtool \
 		ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
-		freetype pixman cairo gperf Python fontconfig cmake)
+		freetype pixman cairo gperf cmake Python fontconfig)
 	eval $cmd >&2 || return 1
 	# && install_ICU -a $apps_dir -e
 	# && install_anaconda -a $apps_dir -e
