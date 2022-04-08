@@ -518,7 +518,641 @@ install_gcc(){
 	# echo | cpp -fopenmp -dM | grep -i open
 	
 }
-
+install_libtool(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir load_env
+	
+	install_args $@ -p libtool -d 2.4.6; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://ftpmirror.gnu.org/$pkg/libtool-$version.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/bin/libtool ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		update_env -e CPATH -a "$inst_dir/include"
+		# export CPATH=$inst_dir/include
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_ncurses(){
+	local version v1 pkg pkg_ver apps_dir status
+	local url inst_dir down_dir load_env cmd
+	
+	install_args $@ -p ncurses -d 6.2; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://ftp.gnu.org/pub/gnu/ncurses/ncurses-${version}.tar.gz
+	v1=$(echo $version | cut -d '.' -f1)
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/lib/ncurses.pc ] \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib"
+		pkg-config --exists --print-errors ncurses >&2 \
+			|| return 1
+		[ ! -f $inst_dir/bin/ncurses${v1}-config ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags ncurses`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs ncurses`"
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir --with-libtool --enable-pc-files"
+	cmd="$cmd --with-pkg-config-libdir=$inst_dir/lib >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_readline(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir ncores load_env
+	
+	install_args $@ -p readline -d 6.0,8.0,8.1.2; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://ftp.gnu.org/gnu/readline/readline-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		CPPFLAGS="$CPPFLAGS -I$inst_dir/include -I$inst_dir/include/readline"
+		LDFLAGS="$LDFLAGS -L$inst_dir/lib"
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+		ncurses)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_xz(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir load_env
+	
+	install_args $@ -p xz -d 5.2.5; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://tukaani.org/xz/xz-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/lib/pkgconfig/liblzma.pc ] \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		pkg-config --exists --print-errors liblzma >&2 \
+			|| return 1
+		[ ! -f $inst_dir/bin/xz ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags liblzma`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs liblzma`"
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_bzip2(){
+	local version pkg pkg_ver apps_dir status
+	local url inst_dir down_dir ncores load_env
+	
+	# Source: https://github.com/libimobiledevice/sbmanager/issues/1
+	
+	install_args $@ -p bzip2 -d 1.0.6; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://sourceware.org/pub/bzip2/bzip2-$version.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -d $inst_dir/lib/pkgconfig ] \
+			&& echo -e "pkgconfig issue for $pkg_ver" >&2 \
+			&& return 1
+		[ ! -f $inst_dir/bin/bzip2 ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		pkg-config --exists --print-errors bzip2 >&2 \
+			|| return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags bzip2`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs bzip2`"
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		update_env -e CPATH -a "$inst_dir/include"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	cd $down_dir
+	[ ! -f bzip2-1.0.6-install_docs-1.patch ] \
+		&& wget https://gist.githubusercontent.com/steakknife/946f6ee331512a269145b293cbe898cc/raw/bzip2-1.0.6-install_docs-1.patch >&2
+	[ ! -f bzip2recover-CVE-2016-3189.patch ] \
+		&& wget https://gist.githubusercontent.com/steakknife/eceda09cae0cdb4900bcd9e479bab9be/raw/bzip2recover-CVE-2016-3189.patch >&2
+	[ ! -f bzip2-man-page-location.patch ] \
+		&& wget https://gist.githubusercontent.com/steakknife/42feaa223adb4dd7c5c85f288794973c/raw/bzip2-man-page-location.patch >&2
+	[ ! -f bzip2-shared-make-install.patch ] \
+		&& wget https://gist.githubusercontent.com/steakknife/94f8aa4bfa79a3f896a660bf4e973f72/raw/bzip2-shared-make-install.patch >&2
+	[ ! -f bzip2-pkg-config.patch ] \
+		&& wget https://gist.githubusercontent.com/steakknife/4faee8a657db9402cbeb579279156e84/raw/bzip2-pkg-config.patch >&2
+	patch -u < bzip2-1.0.6-install_docs-1.patch >&2 \
+		&& patch -u < bzip2recover-CVE-2016-3189.patch >&2 \
+		&& patch -u < bzip2-man-page-location.patch >&2 \
+		&& patch -u < bzip2-shared-make-install.patch >&2 \
+		&& patch -u < bzip2-pkg-config.patch >&2
+	[ ! $? -eq 0 ] && echo "Patch error, quitting" >&2 \
+		&& return 1
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cd $down_dir
+	make install PREFIX=$inst_dir >&2 \
+		&& make clean >&2 \
+		&& make -f Makefile-libbz2_so >&2
+	status=$?
+	
+	mv bzip2-shared $inst_dir/bin/
+	mv libbz2.so.${version} $inst_dir/lib/
+	ln -s $inst_dir/lib/libbz2.so.${version} $inst_dir/lib/libbz2.so.1.0
+	ln -s $inst_dir/lib/libbz2.so.${version} $inst_dir/lib/libbz2.so
+	
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_pcre2(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir load_env
+	
+	install_args $@ -p pcre2 -d 10.37; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://github.com/PhilipHazel/pcre2/releases
+	url=$url/download/pcre2-${version}/pcre2-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -d $inst_dir/lib/pkgconfig ] \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		pkg-config --exists --print-errors libpcre2-8 >&2 \
+			|| return 1
+		[ ! -f $inst_dir/bin/pcre2-config ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags libpcre2-8`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs libpcre2-8`"
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_zlib(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir load_env
+	
+	install_args $@ -p zlib -d 1.2.11; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	# url=http://www.zlib.net/zlib-${version}.tar.gz
+	url=https://ftp.osuosl.org/pub/libpng/src/zlib/zlib-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/lib/pkgconfig/zlib.pc ] \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		pkg-config --exists --print-errors zlib >&2 \
+			|| return 1
+		[ ! -f $inst_dir/include/zlib.h ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags zlib`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs zlib`"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	$down_dir/configure --prefix=$inst_dir \
+		&& make >&2 && make test >&2 \
+		&& make install >&2
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_curl(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir load_env
+	
+	install_args $@ -p curl -d 7.72.0; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://curl.haxx.se/download/curl-$version.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/lib/pkgconfig/libcurl.pc ] \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		pkg-config --exists --print-errors libcurl >&2 \
+			|| return 1
+		[ ! -f $inst_dir/bin/curl-config ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags libcurl`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs libcurl`"
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc zlib)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_libxml2(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir load_env
+	
+	install_args $@ -p libxml2 -d 2.9.2; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=ftp://xmlsoft.org/libxml2/libxml2-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/lib/pkgconfig/libxml-2.0.pc ] \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		pkg-config --exists --print-errors libxml-2.0 >&2 \
+			|| return 1
+		[ ! -f $inst_dir/bin/xml2-config ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags libxml-2.0`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs libxml-2.0`"
+		update_env -e PATH -a "$inst_dir/bin"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc zlib xz)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/configure --without-python"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_libpng(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir ncores load_env
+	
+	install_args $@ -p libpng -d 1.6.37; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://download.sourceforge.net/libpng/libpng-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/lib/pkgconfig/libpng16.pc ] \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		pkg-config --exists --print-errors libpng >&2 \
+			|| return 1
+		[ ! -f $inst_dir/bin/libpng16-config ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags libpng`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs libpng`"
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	$down_dir/configure CPPFLAGS="$CPPFLAGS" \
+		LDFLAGS="$LDFLAGS" --prefix=$inst_dir >&2 \
+		&& make >&2 && make install >&2
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_freetype(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir ncores load_env
+	
+	install_args $@ -p freetype -d 2.11.1; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=http://download-mirror.savannah.gnu.org/releases
+	url=$url/freetype/${pkg}-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/lib/pkgconfig/freetype2.pc ] \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		pkg-config --exists --print-errors freetype2 >&2 \
+			|| return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags freetype2`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs freetype2`"
+		update_env -e PATH -a "$inst_dir"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	$down_dir/configure CPPFLAGS="$CPPFLAGS" \
+		LDFLAGS="$LDFLAGS" --prefix=$inst_dir >&2 \
+		&& make >&2 && make install >&2
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_pixman(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir ncores load_env
+	
+	install_args $@ -p pixman -d 0.40.0; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://www.cairographics.org/releases/pixman-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/lib/pkgconfig/pixman-1.pc ] \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		pkg-config --exists --print-errors pixman-1 >&2 \
+			|| return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags pixman-1`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs pixman-1`"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	ncores=`get_ncores`; [ -z $ncores ] && ncores=1
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	$down_dir/configure CPPFLAGS="$CPPFLAGS" \
+		LDFLAGS="$LDFLAGS" --prefix=$inst_dir >&2 \
+		&& make >&2 && make install >&2
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_cairo(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir ncores load_env
+	
+	install_args $@ -p cairo -d 1.16.0; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://www.cairographics.org/releases/cairo-${version}.tar.xz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/lib/pkgconfig/cairo.pc ] \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		pkg-config --exists --print-errors cairo >&2 \
+			|| return 1
+		[ ! -f $inst_dir/bin/cairo-trace ] \
+			&& return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags cairo`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs cairo`"
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	ncores=`get_ncores`
+	[ -z $ncores ] && ncores=1
+	local CPPFLAGS LDFLAGS # CPPFLAGS=; LDFLAGS=;
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc \
+		libpng freetype pixman)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
 
 
 
