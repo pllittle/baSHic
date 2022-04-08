@@ -67,7 +67,7 @@ install_Python(){
 }
 install_pip(){
 	# echo "Debug code" >&2 && return 1
-	local version apps_dir py_dir
+	local apps_dir py_dir
 	local url=https://bootstrap.pypa.io/pip/get-pip.py
 	local inst_fn=get-pip.py
 	
@@ -85,16 +85,11 @@ install_pip(){
 		shift
 	done
 	
-	if [ -z $version ]; then
-		make_menu -p "Which python version? (e.g. 2.7.6, 3.8.4)"
-		read version
-	fi
 	[ -z $apps_dir ] && apps_dir=$HOME/apps
 	
 	# Set environment
 	clear_env
-	local PYTHONHOME
-	local CPPFLAGS LDFLAGS
+	local PYTHONHOME CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		ncurses readline bzip2 zlib Python)
 	eval $cmd >&2 || return 1
