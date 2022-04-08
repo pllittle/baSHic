@@ -12,7 +12,7 @@ install_Python(){
 	local version v1 pkg pkg_ver apps_dir cmd status
 	local url inst_dir down_dir load_env
 	
-	install_args $@ -p Python -d "2.7.6, 3.8.1, 3.8.4"; status=$?
+	install_args $@ -p Python -d "2.7.6, 3.8.1, 3.8.4, 3.10.4"; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	url=https://www.python.org/ftp/python/${version}/Python-${version}.tgz
 	v1=$(echo $version | cut -d '.' -f1-2)
@@ -66,9 +66,8 @@ install_Python(){
 	
 }
 install_pip(){
-	echo "Debug code" >&2 && return 1
+	# echo "Debug code" >&2 && return 1
 	local version apps_dir py_dir
-	local PYTHONPATH PYTHONHOME
 	local url=https://bootstrap.pypa.io/pip/get-pip.py
 	local inst_fn=get-pip.py
 	
@@ -92,22 +91,21 @@ install_pip(){
 	fi
 	[ -z $apps_dir ] && apps_dir=$HOME/apps
 	
-	py_dir=$apps_dir/Python-${version}
-	if [ ! -d $py_dir ]; then
-		install_python -v ${version} -a $apps_dir
-	fi
-	
-	# Add python/bin to PATH
-	update_env -e PATH -a "$py_dir/bin"
-	
+	# Set environment
+	clear_env
+	local PYTHONHOME
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+		ncurses readline bzip2 zlib Python)
+	eval $cmd >&2 || return 1
 	# local PYTHONPATH=$py_dir/lib/python${v2}:$py_dir/lib/python${v2}/site-packages:$PYTHONPATH
 	
 	# Check pip already installed
 	if [ -f $py_dir/bin/pip ]; then
 		pip install -U pip >&2
 	else
-		new_mkdir ~/downloads
-		cd ~/downloads
+		new_mkdir $apps_dir/downloads
+		cd $apps_dir/downloads
 		[ ! -f $inst_fn ] && wget --no-check-certificate $url >&2
 		python $inst_fn >&2
 		new_rm $HOME/downloads/$inst_fn
