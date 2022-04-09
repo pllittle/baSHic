@@ -49,6 +49,11 @@ install_perl(){
 	mv $down_dir $inst_dir
 	cd $inst_dir
 	
+	clear_env
+	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+	eval $cmd >&2 || return 1
+	
 	# Install
 	cmd="./Configure -des"
 	cmd="$cmd -Dprefix=$inst_dir >&2"
