@@ -31,12 +31,6 @@ install_R(){
 	# && install_ICU -a $apps_dir -e
 	# && install_anaconda -a $apps_dir -e
 	
-	# echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH\n" >&2
-	# echo -e "LDFLAGS = $LDFLAGS\n" >&2
-	# echo -e "CPPFLAGS = $CPPFLAGS\n" >&2
-	# echo -e "PKG_CONFIG_PATH = $PKG_CONFIG_PATH\n" >&2
-	# echo -e "PATH = $PATH\n" >&2
-	
 	make_menu -y -p "Do the dependency statuses look good?"; read resp
 	if [ -z $resp ]; then
 		return 0
