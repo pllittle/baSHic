@@ -207,7 +207,7 @@ install_args(){
 	[ -z $apps_dir ] && apps_dir=$HOME/apps
 	
 	work_dir=$apps_dir/downloads
-	new_mkdir $work_dir
+	new_mkdir $apps_dir $work_dir
 	
 	if [ -z $version ]; then
 		show_exist_pkg -p $pkg -a $apps_dir >&2
