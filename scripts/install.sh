@@ -511,7 +511,7 @@ install_gcc(){
 		--with-arch_32=x86-64 --build=x86_64-redhat-linux >&2 \
 		&& make -j $ncores >&2 && make -j $ncores install >&2
 	
-	local status=$?
+	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
 	
@@ -558,7 +558,7 @@ install_libtool(){
 	cmd="$cmd && make >&2 && make install >&2"
 	eval $cmd
 	
-	local status=$?
+	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
 	
@@ -822,7 +822,7 @@ install_pcre2(){
 	cmd="$cmd && make >&2 && make install >&2"
 	eval $cmd
 	
-	local status=$?
+	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
 	
@@ -868,7 +868,7 @@ install_zlib(){
 		&& make >&2 && make test >&2 \
 		&& make install >&2
 	
-	local status=$?
+	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
 	
@@ -917,7 +917,7 @@ install_curl(){
 	cmd="$cmd && make >&2 && make install >&2"
 	eval $cmd
 	
-	local status=$?
+	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
 	
@@ -965,7 +965,7 @@ install_libxml2(){
 	cmd="$cmd && make >&2 && make install >&2"
 	eval $cmd
 	
-	local status=$?
+	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
 	
@@ -1011,7 +1011,7 @@ install_libpng(){
 		LDFLAGS="$LDFLAGS" --prefix=$inst_dir >&2 \
 		&& make >&2 && make install >&2
 	
-	local status=$?
+	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
 	
@@ -1055,7 +1055,7 @@ install_freetype(){
 		LDFLAGS="$LDFLAGS" --prefix=$inst_dir >&2 \
 		&& make >&2 && make install >&2
 	
-	local status=$?
+	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
 	
@@ -1098,7 +1098,7 @@ install_pixman(){
 		LDFLAGS="$LDFLAGS" --prefix=$inst_dir >&2 \
 		&& make >&2 && make install >&2
 	
-	local status=$?
+	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
 	
@@ -1149,7 +1149,7 @@ install_cairo(){
 	cmd="$cmd && make >&2 && make install >&2"
 	eval $cmd
 	
-	local status=$?
+	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
 	
@@ -1191,7 +1191,7 @@ install_cmake(){
 	cmd="$cmd && make >&2 && make install >&2"
 	eval $cmd
 	
-	local status=$?
+	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
 	
@@ -1233,7 +1233,7 @@ install_gperf(){
 	cmd="$cmd && make >&2 && make install >&2"
 	eval $cmd
 	
-	local status=$?
+	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
 	

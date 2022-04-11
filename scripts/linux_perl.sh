@@ -27,10 +27,11 @@ install_cpanm(){
 	[ ! -f $perl_dir/bin/cpanm ] && $perl_dir/bin/cpan App::cpanminus >&2
 }
 install_perl(){
-	local version v1 pkg pkg_ver apps_dir cmd
+	local version v1 pkg pkg_ver apps_dir status cmd
 	local url inst_dir down_dir load_env
 	
-	install_args $@ -p perl -d 5.32.0 || return 0
+	install_args $@ -p perl -d 5.32.0; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	v1=`echo $version | cut -d '.' -f1`
 	url=https://www.cpan.org/src/${v1}.0/perl-${version}.tar.gz
 	
@@ -61,7 +62,7 @@ install_perl(){
 	cmd="$cmd && make install >&2"
 	eval $cmd
 	
-	local status=$?
+	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
 	
