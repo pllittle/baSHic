@@ -421,7 +421,7 @@ prep_env_cmd(){
 		
 		[ $nver -eq 0 ] && [ $status -eq 0 ] \
 			&& [ $verbose -eq 1 ] \
-			&& echo -ne "(detected) " >&2 \
+			&& echo -ne "${orange}(detected) ${NC}" >&2 \
 			&& continue
 		
 		if [ $nver -eq 1 ]; then

@@ -142,6 +142,75 @@ install_bedtools(){
 	return $status
 	
 }
+install_strelka2(){
+	local version v1 pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir load_env tmp_dir
+	
+	install_args $@ -p strelka -d 2.9.10; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://github.com/Illumina/strelka/releases/download
+	url=$url/v$version/strelka-$version.release_src.tar.bz2
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		if [ ! -f $inst_dir/bin/configureStrelkaSomaticWorkflow.py ] \
+			|| [ ! -f $inst_dir/bin/configureStrelkaGermlineWorkflow.py ]; then
+			echo -e "Install $pkg_ver" >&2 \
+				&& return 1
+		fi
+		update_env -e PATH -a "$inst_dir/bin"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	tmp_dir=$(ls $apps_dir/downloads | grep $pkg)
+	tmp_dir=$apps_dir/downloads/$tmp_dir
+	mv $tmp_dir $down_dir
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+		zlib cmake boost)
+	eval $cmd >&2 || return 1
+	# install_xz -a $apps_dir -e && install_curl -a $apps_dir -e
+	# install_htslib -a $apps_dir -e install_samtools -a $apps_dir -e
+	
+	# Install
+	cmd="$down_dir/configure"
+	cmd="$cmd --prefix=$inst_dir"
+	status=$(which cmake > /dev/null; echo $?)
+	[ $status -eq 0 ] && cmd="$cmd --with-cmake=$(which cmake)"
+	# cmd="$cmd && make -C $inst_dir >&2"
+	cmd="$cmd >&2 && make install >&2"
+	eval $cmd
+	
+	status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	[ ! $status -eq 0 ] && return 1
+	
+	# Run demos for somatic/germline workflows to double check everything
+	echo -e "${cyan}Run Strelka2 test ...${NC}" >&2
+	local test_dir=$HOME/strelka_test
+	new_rm $test_dir
+	new_mkdir $test_dir
+	cd $test_dir
+	bash $inst_dir/bin/runStrelkaSomaticWorkflowDemo.bash >&2 \
+		&& bash $inst_dir/bin/runStrelkaGermlineWorkflowDemo.bash >&2
+	status=$?
+	if [ $status -eq 0 ]; then
+		echo -e "${cyan}Strelka2 test complete${NC}" >&2
+		cd
+		new_rm $test_dir && return $status
+	else
+		echo -e "${red}Error with Strelka2 demos!${NC}" >&2 \
+			&& return $status
+	fi
+	
+}
 
 src_genomic=1
 

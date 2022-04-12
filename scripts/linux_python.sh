@@ -222,6 +222,54 @@ install_fontconfig(){
 	
 }
 
+# Boost Functions
+install_boost(){
+	local version v1 pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir load_env tmp_dir
+	
+	install_args $@ -p boost -d 1.73.0; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	v1=$(echo $version | sed 's|\.|_|g')
+	url=https://sourceforge.net/projects/boost/files
+	url=$url/boost/$version/boost_${v1}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -d $inst_dir/libs ] \
+			&& echo -e "Install $pkg_ver!" >&2 \
+			&& return 1
+		update_env -e BOOST_ROOT -a "$inst_dir"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	tmp_dir=$(ls $apps_dir/downloads | grep $pkg)
+	tmp_dir=$apps_dir/downloads/$tmp_dir
+	mv $tmp_dir $inst_dir
+	cd $inst_dir
+	
+	# Clear environment
+	clear_env
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc Python)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="./bootstrap.sh"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir"
+	status=$(which python > /dev/null; echo $?)
+	[ $status -eq 0 ] && cmd="$cmd --with-python=$(which python)"
+	cmd="$cmd >&2 && ./b2 >&2 && ./b2 headers >&2"
+	eval $cmd
+	
+	status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
 
 
 src_python=1
