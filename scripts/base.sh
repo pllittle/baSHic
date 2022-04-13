@@ -1,7 +1,6 @@
 #!/bin/sh
 
-[ ! -z $src_bash ] \
-	&& [ $src_bash -eq 1 ] \
+[ ! -z $src_bash ] && [ $src_bash -eq 1 ] \
 	&& return 0
 
 for fn in colors; do

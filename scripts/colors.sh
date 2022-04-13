@@ -1,7 +1,6 @@
 #!/bin/sh
 
-[ ! -z $src_color ] \
-	&& [ $src_color -eq 1 ] \
+[ ! -z $src_color ] && [ $src_color -eq 1 ] \
 	&& return 0
 
 for fn in setup; do
@@ -253,3 +252,6 @@ make_menu(){
 }
 
 src_color=1
+
+###
+
