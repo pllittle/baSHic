@@ -61,11 +61,16 @@ install_perl(){
 	
 }
 install_perl_modules(){
+	local apps_dir inst_dir
 	local module mods cmd cnt status
 	
 	cnt=0
 	while [ ! -z $1 ]; do
 		case $1 in
+			-a | --apps_dir )
+				shift
+				apps_dir="$1"
+				;;
 			-m | --modules )
 				while [ ! -z "$2" ]; do
 					case $2 in
@@ -84,6 +89,7 @@ install_perl_modules(){
 		shift
 	done
 	
+	[ -z "$apps_dir" ] && apps_dir=$HOME/apps
 	[ -z "${mods[0]}" ] && echo "Add -m <array of perl modules>" >&2 && return 1
 	
 	# Set environment
@@ -91,11 +97,12 @@ install_perl_modules(){
 	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool perl)
 	eval $cmd >&2 || return 1
+	inst_dir=$(cd $(which perl | sed 's|perl$||'); cd ..; pwd)
 	
 	# Install Perl modules
 	for module in "${mods[@]}"; do
 		echo -e "\n\n${white}Install module = $module${NC}" >&2
-		$inst_dir/bin/cpanm --local-lib=$inst_dir $module >&2
+		cpanm --local-lib=$inst_dir $module >&2
 		status=$?
 		if [ ! $status -eq 0 ]; then
 			echo -e "${red}Failed: module = $module${NC}" >&2 && return 1
@@ -107,6 +114,7 @@ install_perl_modules(){
 	return 0
 }
 uninstall_perl_modules(){
+	echo "Update this function" >&2 && return 1
 	local version apps_dir inst_dir module mods
 	local cnt status
 	

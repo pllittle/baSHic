@@ -12,10 +12,10 @@ install_openssl(){
 	local version v1 pkg pkg_ver apps_dir status
 	local url inst_dir down_dir load_env cmd
 	
-	install_args $@ -p openssl -d 3.0.1; status=$?
+	install_args $@ -p openssl -d 3.0.2; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	v1=$(echo $version | cut -d '.' -f1-2)
-	url=https://www.openssl.org/source/old/$v1/openssl-$version.tar.gz
+	url=https://www.openssl.org/source/openssl-$version.tar.gz
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
@@ -40,6 +40,9 @@ install_openssl(){
 	new_mkdir $inst_dir
 	cd $inst_dir
 	
+	# Some dependencies from perl
+	install_perl_modules -m Text::Template Test::More
+	
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS
@@ -49,7 +52,7 @@ install_openssl(){
 	
 	# Install
 	cmd="$down_dir/Configure --prefix=$inst_dir"
-	cmd="$cmd --openssldir=$inst_dir/ssl"
+	cmd="$cmd --openssldir=$inst_dir"
 	cmd="$cmd >&2 && make >&2 && make test >&2"
 	cmd="$cmd && make install >&2"
 	eval $cmd
