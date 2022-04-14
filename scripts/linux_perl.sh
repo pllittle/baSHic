@@ -23,7 +23,7 @@ install_perl(){
 			&& echo "Install $pkg_ver" >&2 && return 1
 		update_env -e PATH -a "$inst_dir/bin"
 		eval "$($inst_dir/bin/perl -I $inst_dir/lib/perl$v1 \
-			-Mlocal::lib=$inst_dir)" >&2 /dev/null
+			-Mlocal::lib=$inst_dir)" >&2
 		[ ! $? -eq 0 ] && echo "Error loading perl" >&2 && return 1
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		return 0
