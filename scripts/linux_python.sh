@@ -43,31 +43,20 @@ install_openssl(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+		zlib perl)
 	eval $cmd >&2 || return 1
 	
 	# Install
 	cmd="$down_dir/Configure --prefix=$inst_dir"
-	cmd="$cmd --openssldir=$inst_dir no-ssl2"
+	cmd="$cmd --openssldir=$inst_dir"
 	cmd="$cmd >&2 && make >&2 && make test >&2"
-	
-	echo "Still writing" >&2 && return 1
-	return 0
-	#############
-	
-	cmd="$down_dir/configure"
-	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
-	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
-	cmd="$cmd --prefix=$inst_dir --with-libtool --enable-pc-files"
-	cmd="$cmd --with-pkg-config-libdir=$inst_dir/lib >&2"
-	cmd="$cmd && make >&2 && make install >&2"
+	cmd="$cmd && make install >&2"
 	eval $cmd
 	
 	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
-	
-	
 	
 }
 install_Python(){
@@ -229,18 +218,15 @@ install_pymod(){
 	clear_env
 	local PYTHONHOME CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
-		ncurses readline bzip2 zlib Python)
-	# openssl 
+		zlib perl openssl ncurses readline bzip2 Python)
 	eval $cmd >&2 || return 1
-	
-	# Add PYTHONPATH??
-	# update_env -e PYTHONPATH -a "$pylib" "$pylib/site-packages"
 	
 	# Install modules
 	for mod in "${mods[@]}"; do
 		python -m pip install $mod >&2
 		[ ! $? -eq 0 ] && echo -e "${red}$mod error${NC}" >&2 \
 			&& return 1
+		echo -e "Installed $mod!${NC}" >&2
 	done
 	
 	# Remove python from PATH
