@@ -7,7 +7,66 @@ for fn in install; do
 	. $HOME/github/baSHic/scripts/$fn.sh
 done
 
-# Python Functions
+# Python Related Functions
+install_openssl(){
+	local version v1 pkg pkg_ver apps_dir status
+	local url inst_dir down_dir load_env cmd
+	
+	install_args $@ -p openssl -d 3.0.1; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	v1=$(echo $version | cut -d '.' -f1-2)
+	url=https://www.openssl.org/source/old/$v1/openssl-$version.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		echo "Update this code" >&2 && return 1
+		[ ! -f $inst_dir/lib/ncurses.pc ] \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib"
+		pkg-config --exists --print-errors ncurses >&2 \
+			|| return 1
+		[ ! -f $inst_dir/bin/ncurses${v1}-config ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags ncurses`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs ncurses`"
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/config --prefix=$inst_dir"
+	cmd="$cmd --openssldir=$inst_dir no-ssl2"
+	echo "Still writing" >&2 && return 1
+	return 0
+	
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir --with-libtool --enable-pc-files"
+	cmd="$cmd --with-pkg-config-libdir=$inst_dir/lib >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+	
+	
+}
 install_Python(){
 	local version v1 v2 pkg pkg_ver apps_dir cmd status
 	local url inst_dir down_dir load_env
@@ -155,13 +214,16 @@ install_pymod(){
 	done
 	
 	[ -z $apps_dir ] && apps_dir=$HOME/apps
-	[ -z "${mods[0]}" ] && echo "no modules provided" >&2 && return 1
+	[ -z "${mods[0]}" ] && echo -e "${red}Add -m " >&2 \
+		&& echo -ne "<array mix of module or " >&2 \
+		&& echo -ne "module==version or " >&2 \
+		&& echo -ne "module>=version>${NC}" >&2 && return 1
 	
 	# Set environment
 	clear_env
 	local PYTHONHOME CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
-		ncurses readline bzip2 zlib Python)
+		openssl ncurses readline bzip2 zlib Python)
 	eval $cmd >&2 || return 1
 	
 	# Add PYTHONPATH??
@@ -173,7 +235,7 @@ install_pymod(){
 	done
 	
 	# Remove python from PATH
-	clear_env
+	# clear_env
 	
 	return 0
 	
