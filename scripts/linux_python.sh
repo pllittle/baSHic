@@ -151,7 +151,7 @@ install_pymod(){
 	done
 	
 	[ -z $apps_dir ] && apps_dir=$HOME/apps
-	[ -z "$mods[0]" ] && echo "no modules provided" >&2 && return 1
+	[ -z "${mods[0]}" ] && echo "no modules provided" >&2 && return 1
 	
 	# Set environment
 	clear_env
