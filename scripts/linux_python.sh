@@ -51,6 +51,7 @@ install_openssl(){
 	eval $cmd >&2 || return 1
 	
 	# Install
+	echo "Try install code" >&2 && return 0
 	cmd="$down_dir/Configure --prefix=$inst_dir"
 	cmd="$cmd --openssldir=$inst_dir"
 	cmd="$cmd >&2 && make >&2 && make test >&2"
