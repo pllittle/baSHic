@@ -56,6 +56,8 @@ install_openssl(){
 	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
 	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
 	cmd="$cmd >&2 && make >&2 && make test >&2"
+	eval $cmd
+	echo -e "status = $?" >&2
 	echo "Continue install code" >&2 && return 0
 	cmd="$cmd && make install >&2"
 	eval $cmd
