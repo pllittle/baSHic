@@ -160,23 +160,6 @@ update_env(){
 		return 1
 	fi
 	
-	# if [ "$env_var" == "PATH" ]; then
-		# input_var=$PATH
-	# elif [ "$env_var" == "LD_LIBRARY_PATH" ]; then
-		# input_var=$LD_LIBRARY_PATH
-	# elif [ "$env_var" == "PYTHONPATH" ]; then
-		# input_var=$PYTHONPATH
-	# elif [ "$env_var" == "LIBRARY_PATH" ]; then
-		# input_var=$LIBRARY_PATH
-	# elif [ "$env_var" == "PKG_CONFIG_PATH" ]; then
-		# input_var=$PKG_CONFIG_PATH
-	# elif [ "$env_var" == "CPATH" ]; then
-		# input_var=$CPATH
-	# else
-		# print_notOpt
-		# return 1
-	# fi
-	
 	echo $input_var | sed 's|:|\n|g' \
 		| sed "s|~|$HOME|g" | sed '/^$/d' \
 		| uniq > $path_fn
@@ -185,7 +168,7 @@ update_env(){
 	add_stat=0
 	if [ ${#addpaths[@]} -gt 0 ]; then
 		for path in "${addpaths[@]}"; do
-			if [ `grep -w "$path" $path_fn | wc -l` -gt 0 ]; then
+			if [ `grep -w "^$path$" $path_fn | wc -l` -gt 0 ]; then
 				# path already in env_var, don't change
 				continue
 			else
