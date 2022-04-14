@@ -49,7 +49,7 @@ install_openssl(){
 	
 	# Install
 	cmd="$down_dir/Configure --prefix=$inst_dir"
-	cmd="$cmd --openssldir=$inst_dir"
+	cmd="$cmd --openssldir=$inst_dir/ssl"
 	cmd="$cmd >&2 && make >&2 && make test >&2"
 	cmd="$cmd && make install >&2"
 	eval $cmd
