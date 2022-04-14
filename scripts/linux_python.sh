@@ -47,10 +47,13 @@ install_openssl(){
 	eval $cmd >&2 || return 1
 	
 	# Install
-	cmd="$down_dir/config --prefix=$inst_dir"
+	cmd="$down_dir/Configure --prefix=$inst_dir"
 	cmd="$cmd --openssldir=$inst_dir no-ssl2"
+	cmd="$cmd >&2 && make >&2 && make test >&2"
+	
 	echo "Still writing" >&2 && return 1
 	return 0
+	#############
 	
 	cmd="$down_dir/configure"
 	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
@@ -95,8 +98,8 @@ install_Python(){
 		update_env -e LIBRARY_PATH -a "$inst_dir/lib"
 		update_env -e CPATH -a "$inst_dir/include"
 		update_env -e MANPATH -a "$inst_dir/share/man"
-		update_env -e PYTHONPATH -a "$inst_dir/lib/python$v1"
 		update_env -e PYTHONPATH -a "$inst_dir/lib/python$v1/site-packages"
+		update_env -e PYTHONPATH -a "$inst_dir/lib/python$v1"
 		return 0
 	fi
 	
@@ -111,7 +114,7 @@ install_Python(){
 	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		ncurses readline bzip2 zlib)
-	# openssl 
+	# openssl
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -226,7 +229,8 @@ install_pymod(){
 	clear_env
 	local PYTHONHOME CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
-		openssl ncurses readline bzip2 zlib Python)
+		ncurses readline bzip2 zlib Python)
+	# openssl 
 	eval $cmd >&2 || return 1
 	
 	# Add PYTHONPATH??
