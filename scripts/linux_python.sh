@@ -9,7 +9,7 @@ done
 
 # Python Functions
 install_Python(){
-	local version v1 pkg pkg_ver apps_dir cmd status
+	local version v1 v2 pkg pkg_ver apps_dir cmd status
 	local url inst_dir down_dir load_env
 	
 	install_args $@ -p Python -d "2.7.6, 3.8.1, 3.8.4, 3.10.4"; status=$?
@@ -62,6 +62,21 @@ install_Python(){
 	
 	local status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
+	
+	# Add sym links
+	if [ ! -f $inst_dir/bin/python ]; then
+		echo "Creating sym link python" >&2
+		v2=$(echo $version | cut -d '.' -f1-2)
+		cmd="ln -s $inst_dir/bin/python$v2 $inst_dir/bin/python"
+		eval $cmd
+	fi
+	if [ ! -f $inst_dir/bin/pip ]; then
+		echo "Creating sym link pip" >&2
+		v2=$(echo $version | cut -d '.' -f1)
+		cmd="ln -s $inst_dir/bin/pip$v2 $inst_dir/bin/pip"
+		eval $cmd
+	fi
+	
 	return $status
 	
 }
@@ -107,17 +122,12 @@ install_pip(){
 	
 }
 install_pymod(){
-	echo "Debug code" >&2 && return 1
-	
-	local version apps_dir v2 py_dir pylib mod mods
+	local apps_dir v2 py_dir pylib mod mods
+	local cmd
 	local cnt=0
 	
 	while [ ! -z $1 ]; do
 		case $1 in
-			-v | --version )
-				shift
-				version="$1"
-				;;
 			-a | --apps_dir )
 				shift
 				apps_dir="$1"
@@ -140,32 +150,26 @@ install_pymod(){
 		shift
 	done
 	
-	if [ -z $version ]; then
-		make_menu -p "Which python version? (e.g. 2.7.6, 3.8.4)"
-		read version
-	fi
 	[ -z $apps_dir ] && apps_dir=$HOME/apps
+	[ -z "$mods[0]" ] && echo "no modules provided" >&2 && return 1
 	
-	py_dir=$apps_dir/Python-${version}
-	if [ ! -d $py_dir ]; then
-		install_python -v ${version} -a $apps_dir
-	fi
-	v2=`echo $version | cut -d '.' -f1-2`
-	pylib=$py_dir/lib/python${v2}
-	
-	# Check/update pip and add python to PATH
-	install_pip -v $version -a $apps_dir
+	# Set environment
+	clear_env
+	local PYTHONHOME CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+		ncurses readline bzip2 zlib Python)
+	eval $cmd >&2 || return 1
 	
 	# Add PYTHONPATH??
 	# update_env -e PYTHONPATH -a "$pylib" "$pylib/site-packages"
 	
 	# Install modules
 	for mod in "${mods[@]}"; do
-		pip install $mod >&2
+		pip -m install $mod >&2
 	done
 	
 	# Remove python from PATH
-	update_env -e PATH -r "$py_dir/bin"
+	clear_env
 	
 	return 0
 	
@@ -221,6 +225,7 @@ install_fontconfig(){
 	return $status
 	
 }
+
 
 # Boost Functions
 install_boost(){
