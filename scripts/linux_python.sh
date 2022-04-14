@@ -95,6 +95,8 @@ install_Python(){
 		update_env -e LIBRARY_PATH -a "$inst_dir/lib"
 		update_env -e CPATH -a "$inst_dir/include"
 		update_env -e MANPATH -a "$inst_dir/share/man"
+		update_env -e PYTHONPATH -a "$inst_dir/lib/python$v1"
+		update_env -e PYTHONPATH -a "$inst_dir/lib/python$v1/site-packages"
 		return 0
 	fi
 	
@@ -108,7 +110,8 @@ install_Python(){
 	local PYTHONHOME
 	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
-		openssl ncurses readline bzip2 zlib)
+		ncurses readline bzip2 zlib)
+	# openssl 
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -116,10 +119,10 @@ install_Python(){
 	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
 	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
 	cmd="$cmd --prefix=$inst_dir"
-	[ ! $(which openssl > /dev/null; echo $?) -eq 0 ] \
-		&& echo -e "${red}Install openssl ${NC}" >&2 \
-		&& return 1
-	cmd="$cmd --with-openssl=$(which openssl)"
+	# [ ! $(which openssl > /dev/null; echo $?) -eq 0 ] \
+		# && echo -e "${red}Install openssl ${NC}" >&2 \
+		# && return 1
+	# cmd="$cmd --with-openssl=$(which openssl)"
 	cmd="$cmd >&2 && make >&2 && make install >&2"
 	eval $cmd
 	
@@ -214,10 +217,10 @@ install_pymod(){
 	done
 	
 	[ -z $apps_dir ] && apps_dir=$HOME/apps
-	[ -z "${mods[0]}" ] && echo -e "${red}Add -m " >&2 \
+	[ -z "${mods[0]}" ] && echo -ne "${red}Add -m " >&2 \
 		&& echo -ne "<array mix of module or " >&2 \
 		&& echo -ne "module==version or " >&2 \
-		&& echo -ne "module>=version>${NC}" >&2 && return 1
+		&& echo -ne "module>=version>${NC}\n" >&2 && return 1
 	
 	# Set environment
 	clear_env
@@ -232,6 +235,8 @@ install_pymod(){
 	# Install modules
 	for mod in "${mods[@]}"; do
 		python -m pip install $mod >&2
+		[ ! $? -eq 0 ] && echo -e "${red}$mod error${NC}" >&2 \
+			&& return 1
 	done
 	
 	# Remove python from PATH
