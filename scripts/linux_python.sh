@@ -49,15 +49,19 @@ install_Python(){
 	local PYTHONHOME
 	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
-		ncurses readline bzip2 zlib)
+		openssl ncurses readline bzip2 zlib)
 	eval $cmd >&2 || return 1
 	
 	# Install
 	cmd="$down_dir/configure"
 	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
 	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
-	cmd="$cmd --prefix=$inst_dir >&2"
-	cmd="$cmd && make >&2 && make install >&2"
+	cmd="$cmd --prefix=$inst_dir"
+	[ ! $(which openssl > /dev/null; echo $?) -eq 0 ] \
+		&& echo -e "${red}Install openssl ${NC}" >&2 \
+		&& return 1
+	cmd="$cmd --with-openssl=$(which openssl)"
+	cmd="$cmd >&2 && make >&2 && make install >&2"
 	eval $cmd
 	
 	local status=$?
@@ -165,7 +169,7 @@ install_pymod(){
 	
 	# Install modules
 	for mod in "${mods[@]}"; do
-		pip -m install $mod >&2
+		python -m pip install $mod >&2
 	done
 	
 	# Remove python from PATH
