@@ -3,7 +3,7 @@
 [ ! -z $src_python ] && [ $src_python -eq 1 ] \
 	&& return 0
 
-for fn in install install_perl; do
+for fn in install linux_perl; do
 	. $HOME/github/baSHic/scripts/$fn.sh
 done
 
