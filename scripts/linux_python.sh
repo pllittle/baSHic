@@ -51,10 +51,12 @@ install_openssl(){
 	eval $cmd >&2 || return 1
 	
 	# Install
-	echo "Try install code" >&2 && return 0
-	cmd="$down_dir/Configure --prefix=$inst_dir"
-	cmd="$cmd --openssldir=$inst_dir"
+	cmd="$down_dir/config --prefix=$inst_dir"
+	# cmd="$cmd --openssldir=$inst_dir"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
 	cmd="$cmd >&2 && make >&2 && make test >&2"
+	echo "Continue install code" >&2 && return 0
 	cmd="$cmd && make install >&2"
 	eval $cmd
 	
@@ -69,7 +71,7 @@ install_Python(){
 	
 	install_args $@ -p Python -d "2.7.6, 3.8.1, 3.8.4, 3.10.4"; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
-	url=https://www.python.org/ftp/python/${version}/Python-${version}.tgz
+	url=https://www.python.org/ftp/python/$version/Python-$version.tgz
 	v1=$(echo $version | cut -d '.' -f1-2)
 	
 	if [ $load_env -eq 1 ]; then
@@ -106,19 +108,20 @@ install_Python(){
 	local PYTHONHOME
 	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
-		ncurses readline bzip2 zlib)
-	# openssl
+		openssl ncurses readline bzip2 zlib)
 	eval $cmd >&2 || return 1
+	
+	local resp
+	make_menu -y -p "Environment good?"; read resp
+	[ -z $resp ] && return 0
+	[ ! -z $resp ] && [ ! $resp -eq 1 ] && return 0
 	
 	# Install
 	cmd="$down_dir/configure"
 	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
 	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
 	cmd="$cmd --prefix=$inst_dir"
-	# [ ! $(which openssl > /dev/null; echo $?) -eq 0 ] \
-		# && echo -e "${red}Install openssl ${NC}" >&2 \
-		# && return 1
-	# cmd="$cmd --with-openssl=$(which openssl)"
+	cmd="$cmd --with-openssl=$(which openssl)"
 	cmd="$cmd >&2 && make >&2 && make install >&2"
 	eval $cmd
 	
