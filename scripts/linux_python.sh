@@ -51,8 +51,8 @@ install_openssl(){
 	eval $cmd >&2 || return 1
 	
 	# Install
-	cmd="$down_dir/config --prefix=$inst_dir"
-	cmd="$cmd --openssldir=$inst_dir"
+	cmd="$down_dir/config zlib --prefix=$inst_dir"
+	cmd="$cmd --openssldir=$inst_dir/ssl"
 	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
 	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
 	cmd="$cmd >&2 && make >&2 && make test >&2"
