@@ -69,7 +69,7 @@ install_Python(){
 	local version v1 v2 pkg pkg_ver apps_dir cmd status
 	local url inst_dir down_dir load_env
 	
-	install_args $@ -p Python -d "2.7.6, 3.8.1, 3.8.4, 3.10.4"; status=$?
+	install_args $@ -p Python -d "3.8.4, 3.10.4"; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	url=https://www.python.org/ftp/python/$version/Python-$version.tgz
 	v1=$(echo $version | cut -d '.' -f1-2)

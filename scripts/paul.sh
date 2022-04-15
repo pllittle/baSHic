@@ -28,8 +28,6 @@ get_paul_dir(){
 		paul_dir=/home/sonicsaver911
 	elif [ "$curr_host" == "instAWScbio" ]; then
 		paul_dir=/home/ubuntu
-	elif [ "$curr_host" == "liusiMac" ]; then
-		paul_dir=$HOME
 	else
 		print_notOpt
 		exit 0

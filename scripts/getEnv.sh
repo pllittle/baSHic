@@ -61,6 +61,12 @@ get_host(){
 	fi
 	
 	if [ -z $cluster ]; then
+		chk_srun=$(which srun &> /dev/null; echo $?)
+		chk_sbatch=$(which sbatch &> /dev/null; echo $?)
+		cluster="slurm"
+	fi
+	
+	if [ -z $cluster ]; then
 		echo "No code for this cluster!" >&2
 		sleep 2; exit 1
 	fi
@@ -214,29 +220,12 @@ update_env(){
 		return 1
 	fi
 	
-	# if [ "$env_var" == "PATH" ]; then
-		# export PATH=$out_var
-	# elif [ "$env_var" == "LD_LIBRARY_PATH" ]; then
-		# export LD_LIBRARY_PATH=$out_var
-	# elif [ "$env_var" == "PYTHONPATH" ]; then
-		# export PYTHONPATH=$out_var
-	# elif [ "$env_var" == "LIBRARY_PATH" ]; then
-		# export LIBRARY_PATH=$out_var
-	# elif [ "$env_var" == "PKG_CONFIG_PATH" ]; then
-		# export PKG_CONFIG_PATH=$out_var
-	# elif [ "$env_var" == "CPATH" ]; then
-		# export CPATH=$out_var
-	# else
-		# print_notOpt
-		# return 1
-	# fi
-	
 }
 get_ncores(){
 	local ncores
 	
 	check_array $curr_host bioinf longleaf uthsc \
-		uthsc_compute && ncores=$SLURM_CPUS_PER_TASK
+		uthsc_compute slurm && ncores=$SLURM_CPUS_PER_TASK
 	[ -z $ncores ] && ncores=1
 	echo $ncores
 }
