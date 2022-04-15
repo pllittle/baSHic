@@ -19,27 +19,25 @@ install_openssl(){
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
-		echo "Update this code" >&2 && return 1
-		[ ! -f $inst_dir/lib/ncurses.pc ] \
-			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib"
-		pkg-config --exists --print-errors ncurses >&2 \
-			|| return 1
-		[ ! -f $inst_dir/bin/ncurses${v1}-config ] \
+		[ ! -d $inst_dir/lib64/pkgconfig ] \
 			&& echo -e "Install $pkg_ver" >&2 \
 			&& return 1
-		CPPFLAGS="$CPPFLAGS `pkg-config --cflags ncurses`"
-		LDFLAGS="$LDFLAGS `pkg-config --libs ncurses`"
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib64/pkgconfig"
+		local pc_fn
+		for pc_fn in `ls $inst_dir/lib64/pkgconfig | grep "pc$" | sed 's|.pc$||g'`; do
+			pkg-config --exists --print-errors $pc_fn >&2 \
+				|| return 1
+			CPPFLAGS="$CPPFLAGS `pkg-config --cflags $pc_fn`"
+			LDFLAGS="$LDFLAGS `pkg-config --libs $pc_fn`"
+		done
 		update_env -e PATH -a "$inst_dir/bin"
-		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib64"
+		update_env -e CPATH -a "$inst_dir/include"
 		return 0
 	fi
 	
 	extract_url -u $url -a $apps_dir -s $pkg_ver
 	[ $? -eq 1 ] && return 0
-	# new_mkdir $inst_dir
-	# mv $down_dir $inst_dir
-	# cd $inst_dir
 	cd $down_dir
 	
 	# Some dependencies from perl
@@ -55,7 +53,6 @@ install_openssl(){
 	# Install
 	cmd="$down_dir/config"
 	cmd="$cmd --prefix=$inst_dir"
-	# cmd="$cmd --openssldir=$inst_dir/openssl"
 	# [ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
 	# [ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
 	cmd="$cmd zlib shared"
