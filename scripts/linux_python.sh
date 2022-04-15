@@ -12,7 +12,7 @@ install_openssl(){
 	local version v1 pkg pkg_ver apps_dir status
 	local url inst_dir down_dir load_env cmd
 	
-	install_args $@ -p openssl -d "1.0.2, 3.0.2"; status=$?
+	install_args $@ -p openssl -d "1.0.2, 1.1.1m, 3.0.2"; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	v1=$(echo $version | cut -d '.' -f1-2)
 	url=https://www.openssl.org/source/openssl-$version.tar.gz
@@ -54,7 +54,7 @@ install_openssl(){
 	# Install
 	cmd="$down_dir/config"
 	cmd="$cmd zlib --prefix=$inst_dir"
-	cmd="$cmd --openssldir=$inst_dir"
+	# cmd="$cmd --openssldir=$inst_dir/openssl"
 	# [ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
 	# [ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
 	cmd="$cmd >&2 && make >&2 && make test >&2"
