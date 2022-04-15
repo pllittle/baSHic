@@ -37,7 +37,8 @@ install_openssl(){
 	
 	extract_url -u $url -a $apps_dir -s $pkg_ver
 	[ $? -eq 1 ] && return 0
-	new_mkdir $inst_dir
+	# new_mkdir $inst_dir
+	mv $down_dir $inst_dir
 	cd $inst_dir
 	
 	# Some dependencies from perl
@@ -51,7 +52,7 @@ install_openssl(){
 	eval $cmd >&2 || return 1
 	
 	# Install
-	cmd="$down_dir/config zlib --prefix=$inst_dir"
+	cmd="./config zlib --prefix=$inst_dir"
 	cmd="$cmd --openssldir=$inst_dir/ssl"
 	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
 	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
