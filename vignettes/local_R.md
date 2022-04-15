@@ -10,7 +10,7 @@ cd $HOME
 # Clone/Pull repo
 cd github
 [ ! -d baSHic ] && git clone https://github.com/pllittle/baSHic.git
-[ -d baSHic ] && git pull
+[ -d baSHic ] && cd baSHic && git pull
 
 # Source environment script
 . ~/github/baSHic/scripts/getEnv.sh

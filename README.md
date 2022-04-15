@@ -6,31 +6,12 @@ Welcome to this repo! The scripts contained here
 * perform local installations
 * make life a little easier :P
 
-## colors.sh
+## Local Installations
 
-* color variables
-* making menu
-* printing option output
+* R: [vignette](https://github.com/pllittle/baSHic/blob/main/vignettes/local_R.md), [script](https://github.com/pllittle/baSHic/blob/main/scripts/linux_R.sh)
+* Python: [script](https://github.com/pllittle/baSHic/blob/main/scripts/linux_python.sh)
 
-## base.sh
+## Future Directions
 
-* File manipulation
-* Array checking
-* Repo pulling
-* git cache
-
-## getEnv.sh
-
-* get linux environment or cluster
-* modifying environmental variables
-* get ncores
-* reset environment
-
-## install.sh
-
-* local installation scripts
-* gcc, libtool, ncurses, readline, xz
-* bzip2, pcre2, zlib, curl, libxml2,
-* libpng, freetype, pixman, cairo
-* ... MORE TO COME!
+* Genomic/Bioinformatic functions
 
