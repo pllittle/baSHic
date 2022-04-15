@@ -15,7 +15,7 @@ install_openssl(){
 	install_args $@ -p openssl -d "1.0.2, 3.0.2"; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	v1=$(echo $version | cut -d '.' -f1-2)
-	url=https://www.openssl.org/source/openssl-${version}m.tar.gz
+	url=https://www.openssl.org/source/openssl-$version.tar.gz
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
