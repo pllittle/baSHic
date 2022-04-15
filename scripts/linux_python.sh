@@ -110,11 +110,6 @@ install_Python(){
 		openssl ncurses readline bzip2 zlib)
 	eval $cmd >&2 || return 1
 	
-	local resp
-	make_menu -y -p "Environment good?"; read resp
-	[ -z $resp ] && return 0
-	[ ! -z $resp ] && [ ! $resp -eq 1 ] && return 0
-	
 	# Install
 	cmd="$down_dir/configure"
 	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
