@@ -37,9 +37,10 @@ install_openssl(){
 	
 	extract_url -u $url -a $apps_dir -s $pkg_ver
 	[ $? -eq 1 ] && return 0
-	new_mkdir $inst_dir
+	# new_mkdir $inst_dir
 	# mv $down_dir $inst_dir
-	cd $inst_dir
+	# cd $inst_dir
+	cd $down_dir
 	
 	# Some dependencies from perl
 	install_perl_modules -m Text::Template Test::More
@@ -53,10 +54,11 @@ install_openssl(){
 	
 	# Install
 	cmd="$down_dir/config"
-	cmd="$cmd zlib --prefix=$inst_dir"
+	cmd="$cmd --prefix=$inst_dir"
 	# cmd="$cmd --openssldir=$inst_dir/openssl"
 	# [ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
 	# [ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	# cmd="$cmd zlib shared"
 	cmd="$cmd >&2 && make >&2 && make test >&2"
 	cmd="$cmd && make install >&2"
 	eval $cmd
@@ -106,7 +108,6 @@ install_Python(){
 	
 	# Set environment
 	clear_env
-	local PYTHONHOME
 	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		openssl ncurses readline bzip2 zlib)
@@ -122,7 +123,7 @@ install_Python(){
 	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
 	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
 	cmd="$cmd --prefix=$inst_dir"
-	cmd="$cmd --with-openssl=$(which openssl)"
+	cmd="$cmd --with-openssl=$(cd $(which openssl | sed 's|openssl$||'); cd ..; pwd)"
 	cmd="$cmd >&2 && make >&2 && make install >&2"
 	eval $cmd
 	
