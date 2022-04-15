@@ -58,7 +58,7 @@ install_openssl(){
 	# cmd="$cmd --openssldir=$inst_dir/openssl"
 	# [ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
 	# [ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
-	# cmd="$cmd zlib shared"
+	cmd="$cmd zlib shared"
 	cmd="$cmd >&2 && make >&2 && make test >&2"
 	cmd="$cmd && make install >&2"
 	eval $cmd
@@ -123,26 +123,41 @@ install_Python(){
 	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
 	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
 	cmd="$cmd --prefix=$inst_dir"
-	cmd="$cmd --with-openssl=$(cd $(which openssl | sed 's|openssl$||'); cd ..; pwd)"
+	if [ $(which openssl > /dev/null; echo $?) -eq 0 ]; then
+		local ssl_root_dir=$(cd $(which openssl \
+			| sed 's|openssl$||'); cd ..; pwd)
+		cmd="$cmd --with-openssl=$ssl_root_dir"
+	else
+		echo -e "${red}No openssl found, quitting${NC}" >&2
+		status=1
+		install_wrapup -s $status -i $inst_dir -d $down_dir
+		[ ! $status -eq 0 ] && return $status
+	fi
 	cmd="$cmd >&2 && make >&2 && make install >&2"
 	eval $cmd
 	
-	local status=$?
+	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
+	[ ! $status -eq 0 ] && return $status
 	
 	# Add sym links
+	v2=$(echo $version | cut -d '.' -f1-2)
 	if [ ! -f $inst_dir/bin/python ]; then
 		echo "Creating sym link python" >&2
-		v2=$(echo $version | cut -d '.' -f1-2)
-		cmd="ln -s $inst_dir/bin/python$v2 $inst_dir/bin/python"
+		cd $inst_dir/bin
+		cmd="ln -s python$v2 python"
 		eval $cmd
 	fi
 	if [ ! -f $inst_dir/bin/pip ]; then
 		echo "Creating sym link pip" >&2
-		v2=$(echo $version | cut -d '.' -f1)
-		cmd="ln -s $inst_dir/bin/pip$v2 $inst_dir/bin/pip"
+		cd $inst_dir/bin
+		cmd="ln -s pip$v2 pip"
 		eval $cmd
 	fi
+	
+	# Update pip
+	echo "Update pip ..." >&2
+	$inst_dir/bin/python -m pip install --upgrade pip
 	
 	return $status
 	
