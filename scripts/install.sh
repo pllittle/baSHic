@@ -468,7 +468,7 @@ install_gcc(){
 	# Load environment
 	if [ $load_env -eq 1 ]; then
 		[ ! -f $inst_dir/bin/gcc ] \
-			&& echo -e "Install $pkg_ver" >&2 \
+			&& echo -e "Run command 'install_gcc'" >&2 \
 			&& return 1
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
