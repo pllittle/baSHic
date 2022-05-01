@@ -15,7 +15,7 @@ Welcome to this repo! The scripts contained here
 </a>
 
 <a href="https://github.com/pllittle/baSHic/blob/main/scripts/linux_python.sh">
-<img src="https://img.shields.io/badge/python-3670A0?style=square&logo=python&logoColor=ffdd54&label=Script" height="30" />
+<img src="https://img.shields.io/badge/Python-3670A0?style=square&logo=python&logoColor=ffdd54&label=Script" height="30" />
 </a>
 
 
