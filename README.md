@@ -8,12 +8,7 @@ Welcome to this repo! The scripts contained here
 
 ## Local Installations
 
-<div style='vertical-align:middle;'>
-<img src="https://img.shields.io/badge/R-%23276DC3.svg?style=square&logo=r&logoColor=pink" />
-: <a href="https://github.com/pllittle/baSHic/blob/main/vignettes/local_R.md">[vignette]</a>,
-<a href="https://github.com/pllittle/baSHic/blob/main/scripts/linux_R.sh">[script]</a>
-</div>
-
+* R: [vignette](https://github.com/pllittle/baSHic/blob/main/vignettes/local_R.md), [script](https://github.com/pllittle/baSHic/blob/main/scripts/linux_R.sh)
 * Python: [script](https://github.com/pllittle/baSHic/blob/main/scripts/linux_python.sh)
 
 ## Future Directions
