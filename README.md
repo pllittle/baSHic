@@ -1,5 +1,5 @@
 <div align="left">
-<img src="https://img.shields.io/badge/Shell_Scripts-%23121011.svg?style=square&logo=gnu-bash&logoColor=green&label=baSHic" width="400" />
+<img src="https://img.shields.io/badge/Shell_Scripts-%23121011.svg?style=square&logo=gnu-bash&logoColor=green&label=baSHic" width="500" />
 </div>
 
 Welcome to this repo! The scripts contained here 
