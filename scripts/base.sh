@@ -112,24 +112,53 @@ check_array(){
 	return 1
 }
 pull_repos(){
-	local arr=("$@")
+	local git_dir cnt repo repos
 	local pull=no
-	local repo resp0 group
+	cnt=0
 	
+	while [ ! -z "$1" ]; do
+		case $1 in
+			-g | --git_dir )
+				shift
+				git_dir="$1"
+				;;
+			-r | --repos )
+				while [ ! -z "$2" ]; do
+					case $2 in
+						-* )
+							break
+							;;
+						* )
+							repos[cnt]="$2"
+							let cnt=cnt+1
+							shift
+							;;
+					esac
+				done
+				;;
+		esac
+		shift
+	done
+	
+	[ -z "$git_dir" ] && echo "Add -g <git directory>" >&2 && return 1
+	[ -z "${repos[0]}" ] && echo "Add -r repo1 repo2" >&2 && return 1
+	new_mkdir $git_dir
+	
+	local resp0 group
 	unset SSH_ASKPASS
 	
-	for repo in "${arr[@]}"; do
+	for repo in "${repos[@]}"; do
 		resp0=
 		make_menu -y -c "\e[38;5;200m" -p "Pull repo = $repo?"; read resp0
 		[ -z $resp0 ] && resp0=1
 		if [ $resp0 -eq 1 ]; then
-			if [ ! -d ~/github/$repo ]; then
+			if [ ! -d $git_dir/$repo ]; then
 				make_menu -p "$repo directory doesn't exist, enter the repo's user/group name:"
 				read group
-				cd ~/github
+				cd $git_dir
 				git clone https://github.com/${group}/${repo}.git >&2
 			else
-				cd ~/github/$repo
+				cd $git_dir/$repo
 				[ -f ~/pull.out ] && rm ~/pull.out
 				git pull > ~/pull.out
 				cat ~/pull.out >&2
@@ -141,12 +170,12 @@ pull_repos(){
 					pull=yes
 				fi
 			fi
-			# pull=yes
 		fi
 	done
 	
 	new_rm ~/pull.out
 	[ "$pull" == "yes" ] && exit 0
+	
 }
 show_PATH(){
 	echo $PATH | sed 's/:/\n/g' >&2
