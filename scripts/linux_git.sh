@@ -3,7 +3,7 @@
 [ ! -z $src_git ] && [ $src_git -eq 1 ] \
 	&& return 0
 
-[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname $0)/..; pwd)
+[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname $BASH_SOURCE)/..; pwd)
 
 for fn in install; do
 	. $bashic_dir/scripts/$fn.sh
