@@ -3,9 +3,7 @@
 [ ! -z $src_color ] && [ $src_color -eq 1 ] \
 	&& return 0
 
-for fn in setup; do
-	. $HOME/github/baSHic/scripts/$fn.sh
-done
+[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname $0)/..; pwd)
 
 #### COLORS & FONT OPTIONS ####
 # 1 = bold, 4 = underline

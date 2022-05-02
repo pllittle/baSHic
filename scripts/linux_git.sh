@@ -3,8 +3,10 @@
 [ ! -z $src_git ] && [ $src_git -eq 1 ] \
 	&& return 0
 
+[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname $0)/..; pwd)
+
 for fn in install; do
-	. $HOME/github/baSHic/scripts/$fn.sh
+	. $bashic_dir/scripts/$fn.sh
 done
 
 install_gitlfs(){

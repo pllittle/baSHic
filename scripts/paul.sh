@@ -2,8 +2,10 @@
 
 [ ! -z "$paul_dir" ] && return 0
 
+[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname $0)/..; pwd)
+
 for fn in colors; do
-	. $HOME/github/baSHic/scripts/$fn.sh
+	. $bashic_dir/scripts/$fn.sh
 done
 
 get_paul_dir(){

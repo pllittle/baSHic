@@ -3,8 +3,10 @@
 [ ! -z $src_install ] && [ $src_install -eq 1 ] \
 	&& return 0
 
+[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname $0)/..; pwd)
+
 for fn in base colors getEnv; do
-	. $HOME/github/baSHic/scripts/$fn.sh
+	. $bashic_dir/scripts/$fn.sh
 done
 
 # Fundamental install functions
