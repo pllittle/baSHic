@@ -4,7 +4,7 @@
 
 [ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname $BASH_SOURCE)/..; pwd)
 
-for fn in colors; do
+for fn in getEnv; do
 	. $bashic_dir/scripts/$fn.sh
 done
 
