@@ -3,10 +3,8 @@
 [ ! -z $src_python ] && [ $src_python -eq 1 ] \
 	&& return 0
 
-[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname "$BASH_SOURCE")/..; pwd)
-
 for fn in install linux_perl; do
-	. $bashic_dir/scripts/$fn.sh
+	. $HOME/github/baSHic/scripts/$fn.sh
 done
 
 # Python Related Functions
