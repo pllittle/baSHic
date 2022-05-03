@@ -41,7 +41,7 @@ smart_progress(){
 	[ -z $mult ] 				&& mult=1
 	iter2=$((iter * mult))
 	
-	if [ -z "$string" ]; then
+	if [ -z "$string" ] || [ "$string" == "." ]; then
 		string="."
 	else
 		string="$string "

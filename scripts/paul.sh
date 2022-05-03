@@ -2,7 +2,7 @@
 
 [ ! -z "$paul_dir" ] && return 0
 
-[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname $BASH_SOURCE)/..; pwd)
+[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname "$BASH_SOURCE")/..; pwd)
 
 for fn in getEnv; do
 	. $bashic_dir/scripts/$fn.sh

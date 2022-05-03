@@ -3,7 +3,7 @@
 [ ! -z $src_install ] && [ $src_install -eq 1 ] \
 	&& return 0
 
-[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname $BASH_SOURCE)/..; pwd)
+[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname "$BASH_SOURCE")/..; pwd)
 
 for fn in base colors getEnv; do
 	. $bashic_dir/scripts/$fn.sh

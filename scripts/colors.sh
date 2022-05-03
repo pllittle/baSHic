@@ -3,7 +3,7 @@
 [ ! -z $src_color ] && [ $src_color -eq 1 ] \
 	&& return 0
 
-[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname $BASH_SOURCE)/..; pwd)
+[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname "$BASH_SOURCE")/..; pwd)
 
 #### COLORS & FONT OPTIONS ####
 # 1 = bold, 4 = underline

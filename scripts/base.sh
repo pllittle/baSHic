@@ -3,7 +3,7 @@
 [ ! -z $src_bash ] && [ $src_bash -eq 1 ] \
 	&& return 0
 
-[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname $BASH_SOURCE)/..; pwd)
+[ -z "$bashic_dir" ] && bashic_dir=$(cd $(dirname "$BASH_SOURCE")/..; pwd)
 
 for fn in colors; do
 	. $bashic_dir/scripts/$fn.sh
