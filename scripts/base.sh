@@ -3,8 +3,10 @@
 [ ! -z $src_bash ] && [ $src_bash -eq 1 ] \
 	&& return 0
 
+[ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
+
 for fn in colors; do
-	. $HOME/github/baSHic/scripts/$fn.sh
+	. $git_dir/baSHic/scripts/$fn.sh
 done
 
 new_mkdir(){

@@ -2,8 +2,10 @@
 
 [ ! -z "$paul_dir" ] && return 0
 
+[ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
+
 for fn in getEnv; do
-	. $HOME/github/baSHic/scripts/$fn.sh
+	. $git_dir/baSHic/scripts/$fn.sh
 done
 
 get_paul_dir(){

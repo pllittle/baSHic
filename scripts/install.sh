@@ -3,8 +3,10 @@
 [ ! -z $src_install ] && [ $src_install -eq 1 ] \
 	&& return 0
 
+[ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
+
 for fn in base colors getEnv; do
-	. $HOME/github/baSHic/scripts/$fn.sh
+	. $git_dir/baSHic/scripts/$fn.sh
 done
 
 # Fundamental install functions

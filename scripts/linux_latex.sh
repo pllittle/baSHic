@@ -2,8 +2,10 @@
 
 [ ! -z $src_latex ] && [ $src_latex -eq 1 ] && return 0
 
+[ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
+
 for fn in install linux_perl; do
-	. $HOME/github/baSHic/scripts/$fn.sh
+	. $git_dir/baSHic/scripts/$fn.sh
 done
 
 install_tex(){

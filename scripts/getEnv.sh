@@ -2,8 +2,10 @@
 
 [ ! -z "$curr_host" ] && return 0
 
+[ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
+
 for fn in base; do
-	. $HOME/github/baSHic/scripts/$fn.sh
+	. $git_dir/baSHic/scripts/$fn.sh
 done
 
 get_host(){
