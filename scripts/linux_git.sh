@@ -9,24 +9,27 @@ for fn in install; do
 	. $git_dir/baSHic/scripts/$fn.sh
 done
 
-install_gitlfs(){
+install_git-lfs(){
 	local version v1 pkg pkg_ver apps_dir status cmd
 	local url inst_dir down_dir load_env tmp_dir
 	
-	install_args $@ -p gitlfs -d 3.0.1; status=$?
+	install_args $@ -p git-lfs -d 3.0.1; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	url=https://github.com/git-lfs/git-lfs/releases
 	url=$url/download/v$version/git-lfs-v$version.tar.gz
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/bin/git-lfs ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
 		update_env -e PATH -a "$inst_dir/bin"
 		return 0
 	fi
 	
 	extract_url -u $url -a $apps_dir -s $pkg_ver
 	[ $? -eq 1 ] && return 0
-	tmp_dir=$(ls $apps_dir/downloads | grep "git-lfs")
+	tmp_dir=$(ls $apps_dir/downloads | grep "$pkg")
 	tmp_dir=$apps_dir/downloads/$tmp_dir
 	mv $tmp_dir $inst_dir
 	cd $inst_dir
@@ -39,11 +42,11 @@ install_gitlfs(){
 	[ ! $status -eq 0 ] && return 1
 	
 }
-install_golang(){
+install_go(){
 	local version v1 pkg pkg_ver apps_dir status cmd
 	local url inst_dir down_dir load_env tmp_dir
 	
-	install_args $@ -p golang -d 17.1; status=$?
+	install_args $@ -p go -d 17.1; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	url=https://golang.org/dl/go1.${version}.linux-amd64.tar.gz
 	
