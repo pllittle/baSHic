@@ -1,5 +1,5 @@
 <div align="left">
-<img src="https://img.shields.io/badge/Script-%23121011.svg?style=square&logo=gnu-bash&logoColor=green&label=R" width="500" />
+<img src="https://img.shields.io/badge/Script-%23121011.svg?style=square&logo=gnu-bash&logoColor=green&label=R" height="100" />
 </div>
 
 To install R locally, follow the steps below.

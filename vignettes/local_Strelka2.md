@@ -1,5 +1,5 @@
 <div align="left">
-<img src="https://img.shields.io/badge/Script-%23121011.svg?style=square&logo=gnu-bash&logoColor=green&label=Strelka2" width="500" />
+<img src="https://img.shields.io/badge/Script-%23121011.svg?style=square&logo=gnu-bash&logoColor=green&label=Strelka2" height="100" />
 </div>
 
 To install Strelka2 locally, follow the steps below. My code is based on [this link](https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/quickStart.md).
