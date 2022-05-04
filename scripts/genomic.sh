@@ -178,8 +178,6 @@ install_strelka2(){
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		zlib cmake boost)
 	eval $cmd >&2 || return 1
-	# install_xz -a $apps_dir -e && install_curl -a $apps_dir -e
-	# install_htslib -a $apps_dir -e install_samtools -a $apps_dir -e
 	
 	# Install
 	cmd="$down_dir/configure"
