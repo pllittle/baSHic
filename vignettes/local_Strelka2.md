@@ -2,7 +2,7 @@
 <img src="https://img.shields.io/badge/Script-%23121011.svg?style=square&logo=gnu-bash&logoColor=green&label=Strelka2" width="500" />
 </div>
 
-To install Strelka2 locally, follow the steps below.
+To install Strelka2 locally, follow the steps below. My code is based on [this link](https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/quickStart.md).
 
 ```Shell
 # Set your working directory
@@ -32,8 +32,9 @@ cd $git_dir
 
 # Install/Test Strelka2
 install_strelka2 -a $apps_dir
-
-
 ```
 
 If there are errors, follow the output or drop me an issue.
+
+# Common Errors
+

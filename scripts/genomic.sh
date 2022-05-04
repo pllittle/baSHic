@@ -145,7 +145,7 @@ install_bedtools(){
 	
 }
 install_strelka2(){
-	local version v1 pkg pkg_ver apps_dir status cmd
+	local version v1 pkg pkg_ver apps_dir status cmd rst
 	local url inst_dir down_dir load_env tmp_dir
 	
 	install_args $@ -p strelka -d 2.9.10; status=$?
@@ -173,7 +173,8 @@ install_strelka2(){
 	cd $inst_dir
 	
 	# Set environment
-	clear_env
+	make_menu -y -p "Reset environment?"; read rst
+	[ ! -z "$rst" ] && [ $rst -eq 1 ] && clear_env
 	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		zlib cmake boost)

@@ -18,6 +18,11 @@ Welcome to this repo! The scripts contained here
 <img src="https://img.shields.io/badge/Python-3670A0?style=square&logo=python&logoColor=ffdd54&label=Script" height="30" />
 </a>
 
+<a href="https://github.com/pllittle/baSHic/blob/main/vignettes/local_Strelka2.md">
+<img src="https://img.shields.io/badge/Strelka2-3670A0?style=square&logo=python&logoColor=ffdd54&label=Vignette" height="30" />
+</a>
+
+
 
 
 ## Future Directions
