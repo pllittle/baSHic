@@ -232,7 +232,11 @@ get_ncores(){
 	echo $ncores
 }
 clear_env(){
-	local env_var cmd
+	local env_var cmd resp
+	
+	make_menu -y -p "Reset environment?"; read resp
+	[ -z "$resp" ] && return 0
+	[ ! -z "$resp" ] && [ "$resp" != "1" ] && return 0
 	
 	check_array $curr_host hutch && ml purge
 	cmd="unset"

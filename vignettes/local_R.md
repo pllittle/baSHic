@@ -36,3 +36,4 @@ install_R -a $apps_dir
 
 If there are errors, follow the output or drop me an issue.
 
+# Common Errors
