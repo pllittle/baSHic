@@ -24,12 +24,6 @@ install_gitlfs(){
 		return 0
 	fi
 	
-	# Set environment
-	clear_env
-	local CPPFLAGS LDFLAGS
-	cmd=$(prep_env_cmd -a $apps_dir -p golang)
-	eval $cmd >&2 || return 1
-	
 	extract_url -u $url -a $apps_dir -s $pkg_ver
 	[ $? -eq 1 ] && return 0
 	tmp_dir=$(ls $apps_dir/downloads | grep "git-lfs")
