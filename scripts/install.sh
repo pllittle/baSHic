@@ -238,7 +238,7 @@ install_args(){
 	
 }
 install_wrapup(){
-	local inst_dir down_dir status
+	local inst_dir down_dir status resp2
 	
 	while [ ! -z $1 ]; do
 		case $1 in
@@ -260,16 +260,15 @@ install_wrapup(){
 	
 	# Either install succeeded or failed
 	if [ $status -eq 0 ]; then
-		echo -e "`date`: Install complete" >&2
+		echo -e "${cyan}`date`: Install complete${NC}" >&2
 		cd $inst_dir
 		[ -d $down_dir ] \
 			&& echo "Removing source dir ..." >&2 \
 			&& rm -rf $down_dir
 	else
-		echo -e "`date`: Install failed" >&2
-		local resp2
+		echo -e "${red}`date`: Install failed${NC}" >&2
 		cd $HOME
-		make_menu -c ${red} -y -p "Delete source & build dirs?"; read resp2
+		make_menu -c ${orange} -y -p "Delete source & build dirs?"; read resp2
 		[ -z $resp2 ] && return 0
 		[ ! -z $resp2 ] && [ $resp2 -eq 1 ] \
 			&& new_rm $inst_dir && new_rm $down_dir
@@ -1240,7 +1239,59 @@ install_gperf(){
 	return $status
 	
 }
-
+install_expat(){
+	local version v1 pkg pkg_ver apps_dir status
+	local url inst_dir down_dir load_env cmd
+	
+	install_args $@ -p expat -d 2.4.1; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	v1=$(echo $version | sed 's|\.|_|g')
+	url=https://github.com/libexpat/libexpat/releases
+	url=$url/download/R_$v1/expat-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/lib/pkgconfig/expat.pc ] \
+			&& return 1
+		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		pkg-config --exists --print-errors expat >&2 \
+			|| return 1
+		[ ! -f $inst_dir/bin/xmlwf ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		CPPFLAGS="$CPPFLAGS `pkg-config --cflags expat`"
+		LDFLAGS="$LDFLAGS `pkg-config --libs expat`"
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		export EXPATLIBPATH=$inst_dir/lib
+		export EXPATINCPATH=$inst_dir/include
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
 
 
 src_install=1
