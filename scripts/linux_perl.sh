@@ -63,11 +63,11 @@ install_perl(){
 	
 }
 install_perl_modules(){
-	local apps_dir inst_dir
-	local module mods cmd cnt status
+	local apps_dir inst_dir dep deps
+	local module mods cmd0 cmd cnt cnt2 status
 	
-	cnt=0
-	while [ ! -z $1 ]; do
+	cnt=0; cnt2=0
+	while [ ! -z "$1" ]; do
 		case $1 in
 			-a | --apps_dir )
 				shift
@@ -87,6 +87,20 @@ install_perl_modules(){
 					esac
 				done
 				;;
+			-d | --deps )
+				while [ ! -z "$2" ]; do
+					case $2 in
+						-* )
+							break
+							;;
+						* )
+							deps[cnt2]="$2"
+							let cnt2=cnt2+1
+							shift
+							;;
+					esac
+				done
+				;;
 		esac
 		shift
 	done
@@ -97,8 +111,13 @@ install_perl_modules(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
-		perl expat db)
+	cmd0="prep_env_cmd -a $apps_dir -p gcc libtool perl"
+	if [ ! -z ${deps[0]} ]; then
+		for dep in ${deps[@]}; do
+			cmd0="$cmd0 $dep"
+		done
+	fi
+	cmd=$($cmd0)
 	eval $cmd >&2 || return 1
 	inst_dir=$(cd $(which perl | sed 's|perl$||'); cd ..; pwd)
 	
