@@ -215,13 +215,17 @@ install_strelka2(){
 install_VEP(){
 	# Source: https://m.ensembl.org/info/docs/tools/vep/script/vep_download.html
 	local url apps_dir inst_dir perl_dir status
-	local release module resp cmd
+	local release genome module resp cmd
 	
 	while [ ! -z "$1" ]; do
 		case $1 in
 			-a | --apps_dir )
 				shift
 				apps_dir="$1"
+				;;
+			-g | --genome )
+				shift
+				genome="$1"
 				;;
 			-r | --release )
 				shift
@@ -236,8 +240,16 @@ install_VEP(){
 		make_menu -p "Which release of VEP to install on? (e.g. 105, 106)"
 		read release
 	fi
-	[ -z $release ] && release=105
+	[ -z "$release" ] && echo "Error release missing, exitting" >&2 && return 1
 	inst_dir=$apps_dir/vep-$release
+	
+	if [ -z "$genome" ]; then
+		make_menu -p "Which genome assembly to use? (e.g. GRCh37, GRCh38)"
+		read genome
+	fi
+	[ -z "$genome" ] && echo "Error release missing, exitting" >&2 && return 1
+	check_array $genome GRCh37 GRCh38
+	[ ! $? -eq 0 ] && echo "Not a valid genome assembly, exitting" >&2 && return 1
 	
 	cd $apps_dir
 	if [ ! -d $inst_dir ]; then
@@ -287,7 +299,7 @@ install_VEP(){
 	
 	# VEP install and download cached database files (# 460) and plugins (gnomad)
 	cd $inst_dir
-	cmd="perl INSTALL.pl --NO_HTSLIB --CACHEDIR $inst_dir"
+	cmd="perl INSTALL.pl --ASSEMBLY $genome --NO_HTSLIB --CACHEDIR $inst_dir"
 	cmd="$cmd"
 	eval $cmd >&2
 	[ ! $? -eq 0 ] && echo -e "Error in VEP installation" >&2 && return 1
