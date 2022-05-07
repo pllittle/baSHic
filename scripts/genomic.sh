@@ -334,6 +334,118 @@ run_strelka2_soma(){
 	return 0
 	
 }
+down_cosmic(){
+	local genome version email pw url authstr downurl out_fn out_dir
+	local tmp_fn=~/.down
+	
+	while [ ! -z $1 ]; do
+		case $1 in
+			-g | --genome )
+				shift
+				genome="$1"
+				;;
+			-v | --version )
+				shift
+				version="$1"
+				;;
+			-o | --out_dir )
+				shift
+				out_dir="$1"
+				;;
+		esac
+		shift
+	done
+	
+	[ -z $genome ] 	&& echo "Add -g <genome>, like GRCh37" >&2 && return 1
+	[ -z $version ] && echo "Add -v <version>, like 90" >&2 && return 1
+	[ -z $out_dir ] && echo "Add -o <out dir>" >&2 && return 1
+	new_mkdir $out_dir
+	cd $out_dir
+	
+	url=https://cancer.sanger.ac.uk/cosmic/file_download
+	url=$url/$genome/cosmic/v$version/VCF/CosmicCodingMuts.vcf.gz
+	# out_fn=`echo $url | sed 's|/|\n|g' | tail -n 1`
+	out_fn=CosmicCodingMuts_${genome}_v${version}.vcf.gz
+	
+	if [ ! -f $out_fn ]; then
+		make_menu -p "Sanger Email? (e.g. abc@gmail.com)"; read email
+		make_menu -p "Sanger Password?"; read -s pw
+		echo >&2
+		authstr=`echo -e "${email}:${pw}" | base64`
+		curl -H "Authorization: Basic ${authstr}" ${url} > $tmp_fn
+		downurl=`cat $tmp_fn | tail -n 1 | sed 's|"||g' \
+			| cut -d ':' --complement -f1 \
+			| sed 's|}$||g'`
+		rm $tmp_fn
+		echo $downurl > cosmic_downurl.txt
+		curl "${downurl}" -o $out_fn >&2
+		[ ! $? -eq 0 ] && echo -e "${red}Error in COSMIC download${NC}" >&2 && return 1
+		new_rm cosmic_downurl.txt
+	fi
+	
+}
+get_COSMIC_canonical(){
+	local genome version cosm_dir
+	local hts_dir cosmic_fn
+	
+	while [ ! -z $1 ]; do
+		case $1 in
+			-g | --genome )
+				shift
+				genome="$1"
+				;;
+			-v | --version )
+				shift
+				version="$1"
+				;;
+			-c | --cosm_dir )
+				shift
+				cosm_dir="$1"
+				;;
+			-h | --hts_dir )
+				shift
+				hts_dir="$1"
+				;;
+		esac
+		shift
+	done
+	
+	[ -z $genome ] 		&& echo "Add -g <genome>, e.g. GRCh37/GRCh38" >&2 && return 1
+	[ -z $version ] 	&& echo "Add -v <version>, e.g. 94/95" >&2 && return 1
+	[ -z $hts_dir ] 	&& echo "Add -h <hts_dir>" >&2 && return 1
+	[ -z $cosm_dir ] 	&& echo "Add -c <COSMIC dir>" >&2 && return 1
+	
+	down_cosmic -g $genome -v $version -o $cosm_dir
+	cosmic_fn=$cosm_dir/CosmicCodingMuts_${genome}_v${version}
+	
+	if [ ! -f $hts_dir/bin/bgzip ] \
+		|| [ ! -f $hts_dir/bin/tabix ]; then
+		echo "Install htslib!" >&2 && return 1
+	fi
+	
+	if [ ! -f ${cosmic_fn}_canonical.vcf.gz ] \
+		|| [ ! -f ${cosmic_fn}_canonical.vcf.gz.tbi ]; then
+		echo -e "`date`: Removing some rows" >&2
+		zgrep -v "GENE=.*_ENST[0-9]*;" $cosmic_fn.vcf.gz \
+			> ${cosmic_fn}_canonical.vcf
+		
+		echo -e "`date`: Running bgzip ..." >&2
+		$hts_dir/bin/bgzip -c ${cosmic_fn}_canonical.vcf \
+			> ${cosmic_fn}_canonical.vcf.gz
+		
+		echo -e "`date`: Running tabix ..." >&2
+		$hts_dir/bin/tabix -p vcf ${cosmic_fn}_canonical.vcf.gz
+		new_rm ${cosmic_fn}_canonical.vcf $cosmic_fn.vcf.gz
+		
+		echo -e "`date`: Finished downloading/processing COSMIC file for VEP" >&2
+		
+	else
+		echo -e "`date`: File already available ^_^" >&2
+		
+	fi
+	
+	return 0
+}
 
 
 src_genomic=1
