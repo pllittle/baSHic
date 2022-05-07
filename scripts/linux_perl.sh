@@ -97,7 +97,8 @@ install_perl_modules(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool perl expat)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+		perl expat db)
 	eval $cmd >&2 || return 1
 	inst_dir=$(cd $(which perl | sed 's|perl$||'); cd ..; pwd)
 	
