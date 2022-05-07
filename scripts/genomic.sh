@@ -233,10 +233,10 @@ install_VEP(){
 	
 	[ -z $apps_dir ] 	&& apps_dir=$HOME/apps
 	if [ -z $release ]; then
-		make_menu -p "Which release of VEP to install on? (e.g. 106)"
+		make_menu -p "Which release of VEP to install on? (e.g. 105, 106)"
 		read release
 	fi
-	[ -z $release ] && release=106
+	[ -z $release ] && release=105
 	inst_dir=$apps_dir/vep-$release
 	
 	cd $apps_dir
