@@ -123,7 +123,7 @@ install_perl_modules(){
 	
 	# Install Perl modules
 	for module in "${mods[@]}"; do
-		echo -e "\n\n${white}Install module = $module${NC}" >&2
+		echo -e "\n${white}Install module = $module${NC}" >&2
 		cpanm --local-lib=$inst_dir $module >&2
 		status=$?
 		if [ ! $status -eq 0 ]; then

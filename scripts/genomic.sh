@@ -212,6 +212,93 @@ install_strelka2(){
 	fi
 	
 }
+install_VEP(){
+	# Source: https://m.ensembl.org/info/docs/tools/vep/script/vep_download.html
+	local url apps_dir inst_dir perl_dir status
+	local release module resp cmd
+	
+	while [ ! -z "$1" ]; do
+		case $1 in
+			-a | --apps_dir )
+				shift
+				apps_dir="$1"
+				;;
+			-r | --release )
+				shift
+				release="$1"
+				;;
+		esac
+		shift
+	done
+	
+	[ -z $apps_dir ] 	&& apps_dir=$HOME/apps
+	if [ -z $release ]; then
+		make_menu -p "Which release of VEP to install on? (e.g. 106)"
+		read release
+	fi
+	[ -z $release ] && release=106
+	inst_dir=$apps_dir/vep-$release
+	
+	cd $apps_dir
+	if [ ! -d $inst_dir ]; then
+		git clone https://github.com/Ensembl/ensembl-vep.git >&2
+		mv $apps_dir/ensembl-vep $inst_dir
+	fi
+	
+	cd $inst_dir
+	git pull >&2
+	git checkout release/$release >&2
+	
+	if [ 1 -eq 2 ]; then
+		$perl_dir/bin/perl -I $perl_dir/lib/perl5 -Mlocal::lib=$perl_dir
+		eval "$($perl_dir/bin/perl -I $perl_dir/lib/perl5 -Mlocal::lib=$perl_dir)"
+		
+		module=DBD::mysql
+		
+		# Remove one module
+		$perl_dir/bin/cpanm --uninstall --local-lib=$perl_dir $module
+		
+		# Install one module
+		$perl_dir/bin/cpanm --local-lib=$perl_dir $module
+		
+		# Check if module successfully installed and location
+		$perl_dir/bin/perl -I $perl_dir/lib/perl5 -e "use $module" # check for error
+		$perl_dir/bin/perldoc -l $module # location
+		
+	fi
+	
+	# Install Perl modules
+	install_perl_modules -a $apps_dir \
+		-d expat db bzip2 xz zlib curl htslib \
+		-m DBI DBD::mysql Try::Tiny XML::Parser XML::Twig \
+		XML::DOM ExtUtils::CBuilder DB_File DB_File::HASHINFO \
+		BioPerl Test::Warnings Bio::DB::HTS
+		# Archive::Zip
+	status=$?
+	[ ! $status -eq 0 ] && echo -e "${red}Some perl module failed${NC}" >&2 \
+		&& return 1
+	
+	# Set environment
+	clear_env
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool perl \
+		bzip2 xz zlib curl expat db htslib)
+	eval $cmd >&2 || return 1
+	
+	# VEP install and download cached database files (# 460) and plugins (gnomad)
+	cd $inst_dir
+	cmd="perl INSTALL.pl --NO_HTSLIB --CACHEDIR $inst_dir"
+	cmd="$cmd"
+	eval $cmd >&2
+	[ ! $? -eq 0 ] && echo -e "Error in VEP installation" >&2 && return 1
+	
+	# caches
+	# http://ftp.ensembl.org/pub/grch37/release-105/variation/indexed_vep_cache/homo_sapiens_merged_vep_105_GRCh37.tar.gz
+	# http://ftp.ensembl.org/pub/release-106/variation/indexed_vep_cache/homo_sapiens_merged_vep_106_GRCh38.tar.gz
+	
+	return 0
+	
+}
 
 # Execution functions
 run_strelka2_soma(){
@@ -446,6 +533,93 @@ get_COSMIC_canonical(){
 	fi
 	
 	return 0
+}
+run_VEP(){
+	local fasta_fn vep_dir genome status vep_rel
+	local input_fn output_fn vep_fields cosmic_fn ncores
+	
+	ncores=1
+	while [ ! -z "$1" ]; do
+		case $1 in
+			-c | --cosmic_fn )
+				shift
+				cosmic_fn="$1"
+				;;
+			-f | --fasta_fn )
+				shift
+				fasta_fn="$1"
+				;;
+			-g | --genome )
+				shift
+				genome="$1"
+				;;
+			-i | --input_fn )
+				shift
+				input_fn="$1"
+				;;
+			-n | --ncores )
+				shift
+				ncores="$1"
+				;;
+			-o | --output_fn )
+				shift
+				output_fn="$1"
+				;;
+			-v | --vep_dir )
+				shift
+				vep_dir="$1"
+				;;
+			-r | --vep_rel )
+				shift
+				vep_rel="$1"
+				;;
+		esac
+		shift
+	done
+	
+	# Check inputs
+	[ -z $cosmic_fn ] && echo "Add -c <cosmic_fn>" >&2 && return 1
+	[ -z $fasta_fn ] 	&& echo "Add -f <fasta_fn>" >&2 && return 1
+	[ -z $genome ] 		&& echo "Add -g <genome, e.g. GRCh37>" >&2 && return 1
+	[ -z $input_fn ] 	&& echo "Add -i <input_fn>" >&2 && return 1
+	[ -z $output_fn ] && echo "Add -o <output_fn>" >&2 && return 1
+	[ -z $vep_dir ] 	&& echo "Add -v <vep_dir>" >&2 && return 1
+	[ -z $vep_rel ] 	&& echo "Add -r <vep release number>" >&2 && return 1
+	
+	# If output file exists, done
+	[ -f $output_fn.gz ] && return 0
+	
+	echo -e "`date`: Start VEP" >&2
+	
+	# Run VEP
+	vep_fields=IMPACT,Consequence,SYMBOL,HGVSc,HGVSp,AF
+	vep_fields="$vep_fields,gnomAD_AF,COSMIC,COSMIC_CNT"
+	vep_fields="$vep_fields,COSMIC_LEGACY_ID"
+	
+	export OMP_NUM_THREADS=$ncores
+	$vep_dir/vep --format vcf --species homo_sapiens \
+		-i $input_fn -o $output_fn --fork $ncores \
+		--cache --dir_cache $vep_dir --cache_version $vep_rel \
+		--assembly $genome --fasta $fasta_fn --force_overwrite \
+		--no_stats --domains --hgvs --af --af_gnomad --vcf \
+		--custom $cosmic_fn,COSMIC,vcf,exact,0,CNT,LEGACY_ID \
+		--fields "$vep_fields"
+	status=$?
+	
+	if [ ! $status -eq 0 ]; then
+		echo "Error in VEP" >&2
+		new_rm $output_fn
+		return 1
+	fi
+	echo -e "`date`: End VEP" >&2
+	
+	export OMP_NUM_THREADS=1
+	echo -e "`date`: gzip VEP annotation" >&2
+	gzip $output_fn
+	[ -f $output_fn ] && rm $output_fn
+	
+	return 0
+	
 }
 
 
