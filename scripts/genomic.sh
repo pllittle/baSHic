@@ -299,7 +299,8 @@ install_VEP(){
 	
 	# VEP install and download cached database files (# 460) and plugins (gnomad)
 	cd $inst_dir
-	cmd="perl INSTALL.pl --ASSEMBLY $genome --NO_HTSLIB --CACHEDIR $inst_dir"
+	cmd="perl INSTALL.pl --CACHE_VERSION $release"
+	cmd="$cmd --ASSEMBLY $genome --NO_HTSLIB --CACHEDIR $inst_dir"
 	cmd="$cmd"
 	eval $cmd >&2
 	[ ! $? -eq 0 ] && echo -e "Error in VEP installation" >&2 && return 1
