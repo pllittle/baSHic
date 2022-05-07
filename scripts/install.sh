@@ -1292,7 +1292,7 @@ install_expat(){
 	return $status
 	
 }
-install_libdb(){
+install_db(){
 	local version v1 pkg pkg_ver apps_dir status
 	local url inst_dir down_dir load_env cmd
 	# Source: http://tiny-cobol.sourceforge.net/docs/faq/faq-libdb.html

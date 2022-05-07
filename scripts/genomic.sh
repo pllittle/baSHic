@@ -45,7 +45,8 @@ install_htslib(){
 	# Set environment
 	clear_env
 	local CPPFLAGS LDFLAGS
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool bzip2 xz zlib curl)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+		bzip2 xz zlib curl)
 	eval $cmd >&2 || return 1
 	
 	# Install
