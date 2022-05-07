@@ -234,7 +234,7 @@ get_ncores(){
 clear_env(){
 	local env_var cmd resp
 	
-	make_menu -y -p "Reset environment?"; read resp
+	make_menu -c ${yellow} -y -p "Reset environment?"; read resp
 	[ -z "$resp" ] && return 0
 	[ ! -z "$resp" ] && [ "$resp" != "1" ] && return 0
 	

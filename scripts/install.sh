@@ -597,7 +597,7 @@ install_ncurses(){
 	
 	# Set environment
 	clear_env
-	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
 	eval $cmd >&2 || return 1
 	
@@ -1292,7 +1292,53 @@ install_expat(){
 	return $status
 	
 }
-
+install_libdb(){
+	local version v1 pkg pkg_ver apps_dir status
+	local url inst_dir down_dir load_env cmd
+	# Source: http://tiny-cobol.sourceforge.net/docs/faq/faq-libdb.html
+	
+	install_args $@ -p db -d 5.3.28; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://github.com/berkeleydb/libdb/releases/download
+	url=$url/v${version}/db-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/bin/db_load ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		export DB_FILE_LIB=$inst_dir/lib
+		export DB_FILE_INCLUDE=$inst_dir/include
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Clear environment
+	clear_env
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/dist/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --enable-compat185"
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
 
 src_install=1
 
