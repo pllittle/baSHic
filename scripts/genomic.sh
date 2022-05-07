@@ -5,7 +5,7 @@
 
 [ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
 
-for fn in install; do
+for fn in install linux_perl; do
 	. $git_dir/baSHic/scripts/$fn.sh
 done
 
