@@ -215,7 +215,7 @@ install_strelka2(){
 install_VEP(){
 	# Source: https://m.ensembl.org/info/docs/tools/vep/script/vep_download.html
 	local url apps_dir inst_dir perl_dir status
-	local release genome module resp cmd
+	local release module resp cmd
 	
 	while [ ! -z "$1" ]; do
 		case $1 in
@@ -242,14 +242,6 @@ install_VEP(){
 	fi
 	[ -z "$release" ] && echo "Error release missing, exitting" >&2 && return 1
 	inst_dir=$apps_dir/vep-$release
-	
-	if [ -z "$genome" ]; then
-		make_menu -p "Which genome assembly to use? (e.g. GRCh37, GRCh38)"
-		read genome
-	fi
-	[ -z "$genome" ] && echo "Error release missing, exitting" >&2 && return 1
-	check_array $genome GRCh37 GRCh38
-	[ ! $? -eq 0 ] && echo "Not a valid genome assembly, exitting" >&2 && return 1
 	
 	cd $apps_dir
 	if [ ! -d $inst_dir ]; then
@@ -299,15 +291,9 @@ install_VEP(){
 	
 	# VEP install and download cached database files (# 460) and plugins (gnomad)
 	cd $inst_dir
-	cmd="perl INSTALL.pl --CACHE_VERSION $release"
-	cmd="$cmd --ASSEMBLY $genome --NO_HTSLIB --CACHEDIR $inst_dir"
-	cmd="$cmd"
+	cmd="perl INSTALL.pl --NO_HTSLIB --CACHEDIR $inst_dir"
 	eval $cmd >&2
 	[ ! $? -eq 0 ] && echo -e "Error in VEP installation" >&2 && return 1
-	
-	# caches
-	# http://ftp.ensembl.org/pub/grch37/release-105/variation/indexed_vep_cache/homo_sapiens_merged_vep_105_GRCh37.tar.gz
-	# http://ftp.ensembl.org/pub/release-106/variation/indexed_vep_cache/homo_sapiens_merged_vep_106_GRCh38.tar.gz
 	
 	return 0
 	
@@ -548,8 +534,9 @@ get_COSMIC_canonical(){
 	return 0
 }
 run_VEP(){
-	local fasta_fn vep_dir genome status vep_rel
+	local fasta_fn vep_dir genome status vep_rel cmd
 	local input_fn output_fn vep_fields cosmic_fn ncores
+	local vep_cache0 vep_cache vep_cache_dir
 	
 	ncores=1
 	while [ ! -z "$1" ]; do
@@ -578,13 +565,17 @@ run_VEP(){
 				shift
 				output_fn="$1"
 				;;
+			-r | --vep_rel )
+				shift
+				vep_rel="$1"
+				;;
 			-v | --vep_dir )
 				shift
 				vep_dir="$1"
 				;;
-			-r | --vep_rel )
+			-a | --vep_cache )
 				shift
-				vep_rel="$1"
+				vep_cache="$1"
 				;;
 		esac
 		shift
@@ -599,8 +590,30 @@ run_VEP(){
 	[ -z $vep_dir ] 	&& echo "Add -v <vep_dir>" >&2 && return 1
 	[ -z $vep_rel ] 	&& echo "Add -r <vep release number>" >&2 && return 1
 	
+	if [ -z "$vep_cache" ]; then
+		make_menu -p "Which cache? Select a number:" \
+			-o "1) VEP" "2) RefSeq" "3) Merged = VEP + RefSeq"
+		read -t 10 vep_cache0
+		[ -z "$vep_cache0" ] && echo "Error: missing input" >&2 && return 1
+		check_array $vep_cache0 1 2 3
+		[ ! $? -eq 0 ] && echo "Error: not a valid cache option" >&2 && return 1
+		[ $vep_cache0 -eq 1 ] && vep_cache="vep"
+		[ $vep_cache0 -eq 2 ] && vep_cache="refseq"
+		[ $vep_cache0 -eq 3 ] && vep_cache="merged"
+	fi
+	check_array $vep_cache vep refseq merged
+	[ ! $? -eq 0 ] && echo "Error: Not a valid cache" >&2 && return 1
+	
+	# Check cache+release+db exists
+	vep_cache_dir=$vep_dir/homo_sapiens
+	[ "$vep_cache" == "merged" ] && vep_cache_dir="${vep_cache_dir}_merged"
+	[ "$vep_cache" == "refseq" ] && vep_cache_dir="${vep_cache_dir}_refseq"
+	[ ! -d $vep_cache_dir ] && echo "Error: VEP cache species missing" >&2 && return 1
+	[ ! $(ls $vep_cache_dir | grep "^${release}_${genome}$" | wc -l) -eq 1 ] \
+		&& echo -e "Error: ${release}_${genome} missing" >&2 && return 1
+	
 	# If output file exists, done
-	[ -f $output_fn.gz ] && return 0
+	[ -f $output_fn.gz ] && echo "Final output already exists" >&2 && return 0
 	
 	echo -e "`date`: Start VEP" >&2
 	
@@ -610,13 +623,15 @@ run_VEP(){
 	vep_fields="$vep_fields,COSMIC_LEGACY_ID"
 	
 	export OMP_NUM_THREADS=$ncores
-	$vep_dir/vep --format vcf --species homo_sapiens \
-		-i $input_fn -o $output_fn --fork $ncores \
-		--cache --dir_cache $vep_dir --cache_version $vep_rel \
-		--assembly $genome --fasta $fasta_fn --force_overwrite \
-		--no_stats --domains --hgvs --af --af_gnomad --vcf \
-		--custom $cosmic_fn,COSMIC,vcf,exact,0,CNT,LEGACY_ID \
-		--fields "$vep_fields"
+	cmd="$vep_dir/vep --format vcf --species homo_sapiens"
+	cmd="$cmd -i $input_fn -o $output_fn --fork $ncores"
+	cmd="$cmd --cache --dir_cache $vep_dir --cache_version $vep_rel"
+	[ "$vep_cache" != "vep" ] && cmd="$cmd --$vep_cache"
+	cmd="$cmd --assembly $genome --fasta $fasta_fn --force_overwrite"
+	cmd="$cmd --no_stats --domains --hgvs --af --af_gnomad --vcf"
+	cmd="$cmd --custom $cosmic_fn,COSMIC,vcf,exact,0,CNT,LEGACY_ID"
+	cmd="$cmd --fields \"$vep_fields\""
+	eval $cmd >&2
 	status=$?
 	
 	if [ ! $status -eq 0 ]; then
@@ -627,6 +642,7 @@ run_VEP(){
 	echo -e "`date`: End VEP" >&2
 	
 	export OMP_NUM_THREADS=1
+	[ ! $(which gzip > /dev/null) -eq 0 ] && echo "No gzip found" >&2 && return 1
 	echo -e "`date`: gzip VEP annotation" >&2
 	gzip $output_fn
 	[ -f $output_fn ] && rm $output_fn
