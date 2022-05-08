@@ -591,7 +591,7 @@ run_VEP(){
 	[ -z $vep_rel ] 	&& echo "Add -r <vep release number>" >&2 && return 1
 	
 	if [ -z "$vep_cache" ]; then
-		make_menu -p "Which cache? Select a number:" \
+		make_menu -c ${yellow} -p "Which cache? Select a number:" \
 			-o "1) VEP" "2) RefSeq" "3) Merged = VEP + RefSeq"
 		read -t 10 vep_cache0
 		[ -z "$vep_cache0" ] && echo "Error: missing input" >&2 && return 1
@@ -606,11 +606,10 @@ run_VEP(){
 	
 	# Check cache+release+db exists
 	vep_cache_dir=$vep_dir/homo_sapiens
-	[ "$vep_cache" == "merged" ] && vep_cache_dir="${vep_cache_dir}_merged"
-	[ "$vep_cache" == "refseq" ] && vep_cache_dir="${vep_cache_dir}_refseq"
+	[ "$vep_cache" != "vep" ] && vep_cache_dir="${vep_cache_dir}_${vep_cache}"
 	[ ! -d $vep_cache_dir ] && echo "Error: VEP cache species missing" >&2 && return 1
-	[ ! $(ls $vep_cache_dir | grep "^${release}_${genome}$" | wc -l) -eq 1 ] \
-		&& echo -e "Error: ${release}_${genome} missing" >&2 && return 1
+	[ ! $(ls $vep_cache_dir | grep "^${vep_rel}_${genome}$" | wc -l) -eq 1 ] \
+		&& echo -e "Error: ${vep_rel}_${genome} missing" >&2 && return 1
 	
 	# If output file exists, done
 	[ -f $output_fn.gz ] && echo "Final output already exists" >&2 && return 0
