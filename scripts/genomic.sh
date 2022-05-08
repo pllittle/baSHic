@@ -358,6 +358,8 @@ run_strelka2_soma(){
 	[ -z $ref ] 				&& echo "Add -r <reference genome>" >&2 && return 1
 	[ -z $out_dir ] 		&& echo "Add -o <output dir>" >&2 && return 1
 	[ -z $ncores ] 			&& echo "Add -c <number of threads/cores>" >&2 && return 1
+	
+	new_mkdir $out_dir
 	var_dir=$out_dir/results/variants
 	[ -s $out_dir/somatic.vcf.gz ] && return 0
 	
@@ -589,6 +591,12 @@ run_VEP(){
 	[ -z $output_fn ] && echo "Add -o <output_fn>" >&2 && return 1
 	[ -z $vep_dir ] 	&& echo "Add -v <vep_dir>" >&2 && return 1
 	[ -z $vep_rel ] 	&& echo "Add -r <vep release number>" >&2 && return 1
+	
+	# Check VEP installed
+	[ ! -d $vep_dir/vep ] && echo "Error: VEP missing" >&2 && return 1
+	[ ! $($vep_dir/vep --help > /dev/null; echo $?) -eq 0 ] \
+		&& echo "Error: VEP not installed or environment not setup" >&2 \
+		&& return 1
 	
 	if [ -z "$vep_cache" ]; then
 		make_menu -c ${yellow} -p "Which cache? Select a number:" \
