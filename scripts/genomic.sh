@@ -359,6 +359,10 @@ run_strelka2_soma(){
 	[ -z $out_dir ] 		&& echo "Add -o <output dir>" >&2 && return 1
 	[ -z $ncores ] 			&& echo "Add -c <number of threads/cores>" >&2 && return 1
 	
+	[ ! $($strelka_dir/bin/configureStrelkaSomaticWorkflow.py -h > /dev/null; echo $?) -eq 0 ] \
+		&& echo "Error: Strelka2 not properly installed or environment isn't setup yet" >&2 \
+		&& return 1
+	
 	new_mkdir $out_dir
 	var_dir=$out_dir/results/variants
 	[ -s $out_dir/somatic.vcf.gz ] && return 0
