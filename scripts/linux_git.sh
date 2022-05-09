@@ -9,18 +9,18 @@ for fn in install; do
 	. $git_dir/baSHic/scripts/$fn.sh
 done
 
-install_git-lfs(){
+install_gitlfs(){
 	local version v1 pkg pkg_ver apps_dir status cmd
 	local url inst_dir down_dir load_env tmp_dir
 	
-	install_args $@ -p git-lfs -d 3.0.1; status=$?
+	install_args $@ -p gitlfs -d 3.0.1; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	url=https://github.com/git-lfs/git-lfs/releases
 	url=$url/download/v$version/git-lfs-v$version.tar.gz
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
-		[ ! -f $inst_dir/bin/git-lfs ] \
+		[ ! -f $inst_dir/bin/gitlfs ] \
 			&& echo -e "Install $pkg_ver" >&2 \
 			&& return 1
 		update_env -e PATH -a "$inst_dir/bin"
@@ -40,6 +40,12 @@ install_git-lfs(){
 	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	[ ! $status -eq 0 ] && return 1
+	
+	# Make symbolic link
+	cd $inst_dir/bin
+	ln -s git-lfs gitlfs
+	cd 
+	return 0
 	
 }
 install_go(){
