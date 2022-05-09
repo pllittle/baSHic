@@ -365,14 +365,18 @@ inst_load_env(){
 prep_env_cmd(){
 	local tmp_ver nver tcmd apps_dir
 	local cmd pkgs pkg status
-	local verbose cnt
+	local verbose cnt pkgver_fn
 	
-	verbose=1; cnt=0
+	verbose=1; cnt=0; pkgver_fn=~/pkgver.txt
 	while [ ! -z "$1" ]; do
 		case $1 in
 			-a | --apps_dir )
 				shift
 				apps_dir="$1"
+				;;
+			-f | --pkgver_fn )
+				shift
+				pkgver_fn="$1"
 				;;
 			-v | --verbose )
 				verbose=0
@@ -414,11 +418,11 @@ prep_env_cmd(){
 		
 		# Get available installed version(s)
 		ls $apps_dir | grep -w $pkg \
-			| sed "s|${pkg}-||g" > ~/pkgver.txt
+			| sed "s|${pkg}-||g" > $pkgver_fn
 		
 		# Get system installed version
 		status=$(which $pkg &> /dev/null; echo $?)
-		nver=$(cat ~/pkgver.txt | wc -l)
+		nver=$(cat $pkgver_fn | wc -l)
 		
 		[ $nver -eq 0 ] && [ $status -eq 0 ] \
 			&& [ $verbose -eq 1 ] \
@@ -426,7 +430,7 @@ prep_env_cmd(){
 			&& continue
 		
 		if [ $nver -eq 1 ]; then
-			tmp_ver=$(cat ~/pkgver.txt)
+			tmp_ver=$(cat $pkgver_fn)
 			tcmd="install_${pkg} -a $apps_dir -e -v $tmp_ver"
 		elif [ $nver -eq 0 ] && [ ! $status -eq 0 ]; then
 			[ $verbose -eq 1 ] && echo -ne "${red}(skipped) ${NC}" >&2
@@ -434,14 +438,14 @@ prep_env_cmd(){
 		else
 			echo >&2
 			echo -e "${cyan}For $pkg:" >&2
-			cat ~/pkgver.txt | sort -t ',' -k1,1nr -k2,2nr -k3,3nr \
+			cat $pkgver_fn | sort -t ',' -k1,1nr -k2,2nr -k3,3nr \
 				| awk '{print "\t" $0}' >&2
 			echo -ne "${NC}" >&2
 			make_menu -c ${orange} -p "Pick a $pkg version"
 			read tmp_ver
 			tcmd="install_${pkg} -a $apps_dir -e -v $tmp_ver"
 		fi
-		new_rm ~/pkgver.txt
+		new_rm $pkgver_fn
 		
 		if [ -z "$cmd" ]; then
 			cmd="$tcmd"
@@ -450,7 +454,7 @@ prep_env_cmd(){
 		fi
 		[ $verbose -eq 1 ] && echo -ne "(installed) " >&2
 		
-	done; echo >&2; new_rm ~/pkgver.txt
+	done; echo >&2; new_rm $pkgver_fn
 	[ $verbose -eq 1 ] \
 		&& echo -e "${yellow}Completing the environment command ...${NC}" >&2
 	
