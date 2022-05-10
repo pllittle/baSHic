@@ -656,7 +656,7 @@ run_VEP(){
 	[ ! $(which gzip > /dev/null; echo $?) -eq 0 ] && echo "No gzip found" >&2 && return 1
 	echo -e "`date`: gzip VEP annotation" >&2
 	gzip $output_fn
-	[ -f $output_fn ] && rm $output_fn
+	new_rm $output_fn
 	
 	return 0
 	
