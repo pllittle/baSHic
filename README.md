@@ -2,6 +2,14 @@
 <img src="https://img.shields.io/badge/Shell_Scripts-%23121011.svg?style=square&logo=gnu-bash&logoColor=green&label=baSHic" height="80" />
 </div>
 
+<!-- badges: start -->
+![C++](https://img.shields.io/badge/C++-%2300599C.svg?style=square&logo=c%2B%2B&logoColor=gold)
+![R](https://img.shields.io/badge/R-%23276DC3.svg?style=square&logo=r&logoColor=pink)
+[![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![](https://img.shields.io/github/languages/code-size/pllittle/baSHic.svg)](https://github.com/pllittle/baSHic)
+[![](https://img.shields.io/github/last-commit/pllittle/baSHic.svg)](https://github.com/pllittle/baSHic/commits/master)
+<!-- badges: end -->
+
 Welcome to this repo! The scripts contained here 
 
 * augment basic bash commands
