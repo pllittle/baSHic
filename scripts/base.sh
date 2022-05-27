@@ -155,8 +155,8 @@ pull_repos(){
 	for userrepo in "${userrepos[@]}"; do
 		group=$(echo $userrepo | cut -d '/' -f1)
 		repo=$(echo $userrepo | cut -d '/' -f2)
-		make_menu -y -c "\e[38;5;200m" \
-			-p "Pull repo = $userrepo?"; read resp
+		make_menu -y -c "\e[38;5;200m" -p "Pull repo = $userrepo?"
+		read -t 5 resp
 		[ -z $resp ] && resp=1
 		if [ $resp -eq 1 ]; then
 			if [ ! -d $git_dir/$repo ]; then
