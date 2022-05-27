@@ -170,7 +170,6 @@ pull_repos(){
 				cat ~/pull.out >&2
 				if [ "$pull" == "no" ] && [ $(cat ~/pull.out | grep -m 1 "Already up" | wc -l) -eq 1 ]; then
 					pull=no
-					cat ~/pull.out | grep "Already up" >&2
 				else
 					pull=yes
 				fi
