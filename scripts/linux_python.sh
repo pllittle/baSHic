@@ -336,7 +336,7 @@ install_boost(){
 	# Clear environment
 	clear_env
 	local CPPFLAGS LDFLAGS
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc Python)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool Python)
 	eval $cmd >&2 || return 1
 	
 	# Install
