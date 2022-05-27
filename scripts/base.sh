@@ -167,12 +167,11 @@ pull_repos(){
 				new_rm ~/pull.out
 				# git pull > ~/pull.out
 				git pull https://$myuser@github.com/$group/$repo > ~/pull.out
-				cat ~/pull.out >&2
-				if [ "$pull" == "no" ] && [ `cat ~/pull.out | wc -l` -eq 1 ] \
-					&& [ "`cat ~/pull.out`" == "Already up-to-date." \
-						-o "`cat ~/pull.out`" == "Already up to date." ]; then
+				if [ "$pull" == "no" ] && [ $(cat ~/pull.out | grep -m 1 "Already up" | wc -l) -eq 1 ]; then
 					pull=no
+					cat ~/pull.out | grep "Already up" >&2
 				else
+					cat ~/pull.out >&2
 					pull=yes
 				fi
 			fi
