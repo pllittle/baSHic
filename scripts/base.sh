@@ -123,6 +123,10 @@ pull_repos(){
 				shift
 				git_dir="$1"
 				;;
+			-m | --myuser )
+				shift
+				myuser="$1"
+				;;
 			-r | --repos )
 				while [ ! -z "$2" ]; do
 					case $2 in
