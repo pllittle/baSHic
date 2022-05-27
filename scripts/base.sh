@@ -112,7 +112,8 @@ check_array(){
 	return 1
 }
 pull_repos(){
-	local git_dir cnt repo repos
+	local git_dir cnt userrepo userrepos resp group repo
+	local myuser
 	local pull=no
 	cnt=0
 	
@@ -129,7 +130,7 @@ pull_repos(){
 							break
 							;;
 						* )
-							repos[cnt]="$2"
+							userrepos[cnt]="$2"
 							let cnt=cnt+1
 							shift
 							;;
@@ -141,26 +142,27 @@ pull_repos(){
 	done
 	
 	[ -z "$git_dir" ] && echo "Add -g <git directory>" >&2 && return 1
-	[ -z "${repos[0]}" ] && echo "Add -r repo1 repo2" >&2 && return 1
-	new_mkdir $git_dir
+	[ -z "${userrepos[0]}" ] && echo "Add -r group1/repo1 group2/repo2" >&2 && return 1
+	[ -z "$myuser" ] && echo "Add -m <GitHub username>" >&2 && return 1
 	
-	local resp0 group
+	new_mkdir $git_dir
 	unset SSH_ASKPASS
 	
-	for repo in "${repos[@]}"; do
-		resp0=
-		make_menu -y -c "\e[38;5;200m" -p "Pull repo = $repo?"; read resp0
-		[ -z $resp0 ] && resp0=1
-		if [ $resp0 -eq 1 ]; then
+	for userrepo in "${userrepos[@]}"; do
+		group=$(echo $userrepo | cut -d '/' -f1)
+		repo=$(echo $userrepo | cut -d '/' -f2)
+		make_menu -y -c "\e[38;5;200m" \
+			-p "Pull repo = $userrepo?"; read resp
+		[ -z $resp ] && resp=1
+		if [ $resp -eq 1 ]; then
 			if [ ! -d $git_dir/$repo ]; then
-				make_menu -p "$repo directory doesn't exist, enter the repo's user/group name:"
-				read group
 				cd $git_dir
-				git clone https://github.com/${group}/${repo}.git >&2
+				git clone https://github.com/$group/$repo.git >&2
 			else
 				cd $git_dir/$repo
-				[ -f ~/pull.out ] && rm ~/pull.out
-				git pull > ~/pull.out
+				new_rm ~/pull.out
+				# git pull > ~/pull.out
+				git pull https://$myuser@github.com/$group/$repo > ~/pull.out
 				cat ~/pull.out >&2
 				if [ "$pull" == "no" ] && [ `cat ~/pull.out | wc -l` -eq 1 ] \
 					&& [ "`cat ~/pull.out`" == "Already up-to-date." \
