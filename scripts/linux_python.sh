@@ -140,18 +140,18 @@ install_Python(){
 		echo "Creating sym link python" >&2
 		cd $inst_dir/bin
 		cmd="ln -s python$v2 python"
-		eval $cmd
+		eval $cmd >&2
 	fi
 	if [ ! -f $inst_dir/bin/pip ]; then
 		echo "Creating sym link pip" >&2
 		cd $inst_dir/bin
 		cmd="ln -s pip$v2 pip"
-		eval $cmd
+		eval $cmd >&2
 	fi
 	
 	# Update pip
 	echo "Update pip ..." >&2
-	$inst_dir/bin/python -m pip install --upgrade pip
+	$inst_dir/bin/python -m pip install --upgrade pip >&2
 	
 	return $status
 	
