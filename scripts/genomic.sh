@@ -521,8 +521,8 @@ get_COSMIC_canonical(){
 		
 		[ ! -f $cosmic_fn.vcf.gz ] \
 			&& down_cosmic -g $genome -v $version -o $cosm_dir
-		[ ! $? -eq 0 ] && echo -e "$cosmic_fn.vcf.gz is missing" >&2 \
-			&& return 1
+		# [ ! $? -eq 0 ] && echo -e "$cosmic_fn.vcf.gz is missing" >&2 \
+			# && return 1
 		
 		echo -e "`date`: Removing some rows" >&2
 		zgrep -v "GENE=.*_ENST[0-9]*;" $cosmic_fn.vcf.gz \
