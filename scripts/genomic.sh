@@ -461,8 +461,8 @@ down_cosmic(){
 	out_fn=CosmicCodingMuts_${genome}_v${version}.vcf.gz
 	
 	if [ ! -f $out_fn ]; then
-		make_menu -p "Sanger Email? (e.g. abc@gmail.com)"; read email
-		make_menu -p "Sanger Password?"; read -s pw
+		make_menu -p "COSMIC/Sanger Email? (e.g. abc@gmail.com)"; read email
+		make_menu -p "COSMIC/Sanger Password?"; read -s pw
 		echo >&2
 		authstr=`echo -e "${email}:${pw}" | base64`
 		curl -H "Authorization: Basic ${authstr}" ${url} > $tmp_fn
