@@ -518,6 +518,12 @@ get_COSMIC_canonical(){
 	
 	if [ ! -f ${cosmic_fn}_canonical.vcf.gz ] \
 		|| [ ! -f ${cosmic_fn}_canonical.vcf.gz.tbi ]; then
+		
+		[ ! -f $cosmic_fn.vcf.gz ] \
+			&& down_cosmic -g $genome -v $version -o $cosm_dir
+		[ ! $? -eq 0 ] && echo -e "$cosmic_fn.vcf.gz is missing" >&2 \
+			&& return 1
+		
 		echo -e "`date`: Removing some rows" >&2
 		zgrep -v "GENE=.*_ENST[0-9]*;" $cosmic_fn.vcf.gz \
 			> ${cosmic_fn}_canonical.vcf
@@ -525,9 +531,11 @@ get_COSMIC_canonical(){
 		echo -e "`date`: Running bgzip ..." >&2
 		$hts_dir/bin/bgzip -c ${cosmic_fn}_canonical.vcf \
 			> ${cosmic_fn}_canonical.vcf.gz
+		[ ! $? -eq 0 ] && echo "Error with bgzip" >&2 && return 1
 		
 		echo -e "`date`: Running tabix ..." >&2
 		$hts_dir/bin/tabix -p vcf ${cosmic_fn}_canonical.vcf.gz
+		[ ! $? -eq 0 ] && echo "Error with tabix" >&2 && return 1
 		new_rm ${cosmic_fn}_canonical.vcf $cosmic_fn.vcf.gz
 		
 		echo -e "`date`: Finished downloading/processing COSMIC file for VEP" >&2
