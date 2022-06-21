@@ -14,6 +14,7 @@ purple='\e[1;35m' 		# Bold, Purple
 cyan='\e[1;36m' 			# Bold, Cyan
 white='\e[1;37m' 			# Bold, White
 orange='\e[38;5;208m' # Bold, Orange
+green='\e[0;32m'			# Bold, Green
 NC='\e[0m' 						# no color
 
 BU=`tput smul`
