@@ -4,7 +4,8 @@
 
 [ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
 
-for fn in install linux_perl linux_python; do
+for fn in install linux_latex \
+	linux_perl linux_python; do
 	. $git_dir/baSHic/scripts/$fn.sh
 done
 
