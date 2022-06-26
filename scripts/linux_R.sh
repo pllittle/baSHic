@@ -131,10 +131,10 @@ run_R(){
 		shift
 	done
 	
-	[ -z "$use" ] && echo "Add -u <R use>" >&2 && return 1
+	[ -z "$use" ] && echo "Add -u <R use, either batch/int/quick/script>" >&2 && return 1
 	[ -z "$apps_dir" ] && apps_dir=$HOME/apps
 	
-	check_array $use batch int quick
+	check_array $use batch int quick script
 	[ ! $? -eq 0 ] && echo "Error with -u argument" >&2 && return 1
 	
 	# Get R version
@@ -232,6 +232,10 @@ run_R(){
 	elif [ "$use" == "quick" ]; then
 		
 		$R_dir/R --vanilla
+	
+	elif [ "$use" == "script" ]; then
+		
+		$R_dir/R --vanilla CMD BATCH $script.R $script.Rout
 		
 	fi
 	
