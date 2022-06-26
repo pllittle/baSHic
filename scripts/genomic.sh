@@ -539,7 +539,7 @@ get_COSMIC_canonical(){
 		echo -e "`date`: Finished downloading/processing COSMIC file for VEP" >&2
 		
 	else
-		echo -e "`date`: File already available ^_^" >&2
+		echo -e "`date`: CosmicCodingMuts_${genome}_v${version} file already available ^_^" >&2
 		
 	fi
 	
@@ -630,7 +630,7 @@ run_VEP(){
 		&& echo -e "Error: ${vep_rel}_${genome} missing" >&2 && return 1
 	
 	# If output file exists, done
-	[ -f $output_fn.gz ] && echo "Final output already exists" >&2 && return 0
+	[ -f $output_fn.gz ] && echo -e "$(date): Final VEP output already exists" >&2 && return 0
 	
 	echo -e "`date`: Start VEP" >&2
 	
