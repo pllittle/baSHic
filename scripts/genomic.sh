@@ -508,7 +508,7 @@ get_COSMIC_canonical(){
 	[ -z $hts_dir ] 	&& echo "Add -h <hts_dir>" >&2 && return 1
 	[ -z $cosm_dir ] 	&& echo "Add -c <COSMIC dir>" >&2 && return 1
 	
-	down_cosmic -g $genome -v $version -o $cosm_dir
+	# down_cosmic -g $genome -v $version -o $cosm_dir
 	cosmic_fn=$cosm_dir/CosmicCodingMuts_${genome}_v${version}
 	
 	if [ ! -f $hts_dir/bin/bgzip ] \
