@@ -603,7 +603,7 @@ run_VEP(){
 	[ -z $vep_rel ] 	&& echo "Add -r <vep release number>" >&2 && return 1
 	
 	# Check VEP installed
-	[ ! -d $vep_dir/vep ] && echo "Error: VEP missing" >&2 && return 1
+	[ ! -f $vep_dir/vep ] && echo "Error: VEP missing" >&2 && return 1
 	[ ! $($vep_dir/vep --help > /dev/null; echo $?) -eq 0 ] \
 		&& echo "Error: VEP not installed or environment not setup" >&2 \
 		&& return 1
