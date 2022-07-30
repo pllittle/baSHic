@@ -101,7 +101,7 @@ extract_url(){
 	
 	# Check url exists
 	echo -e "${purple}Checking URL exists ...${NC}" >&2
-	status=$(curl --head --silent --fail $url &> /dev/null; echo $?)
+	status=$(curl --head -s --fail $url &> /dev/null; echo $?)
 	[ ! $status -eq 0 ] && echo "URL doesn't work, update it!" >&2 && return 1
 	
 	# If install source directory exists, skip url down
@@ -155,6 +155,7 @@ pull_app_repo(){
 }
 show_exist_pkg(){
 	local pkg apps_dir
+	
 	while [ ! -z $1 ]; do
 		case $1 in
 			-p | --pkg )
@@ -169,12 +170,13 @@ show_exist_pkg(){
 		shift
 	done
 	
-	[ -z $pkg ] && echo "Missing pkg!" >&2 && exit 0
-	[ -z $apps_dir ] && echo "Missing apps_dir!" >&2 && exit 0
+	[ -z $pkg ] && echo "Missing pkg!" >&2 && return 1
+	[ -z $apps_dir ] && echo "Missing apps_dir!" >&2 && return 1
 	
-	if [ `ls $apps_dir | grep -w $pkg | wc -l` -gt 0 ]; then
-		ls $apps_dir | grep -w $pkg
+	if [ `ls $apps_dir | grep -w "^$pkg" | wc -l` -gt 0 ]; then
+		ls $apps_dir | grep -w "^$pkg"
 	fi
+	
 }
 install_args(){
 	local default status resp work_dir
@@ -213,11 +215,9 @@ install_args(){
 	
 	if [ -z $version ]; then
 		show_exist_pkg -p $pkg -a $apps_dir >&2
-		if [ -z "$default" ]; then
-			make_menu -p "Which $pkg version?"
-		else
-			make_menu -p "Which $pkg version? (e.g. $default)"
-		fi
+		[ ! $? -eq 0 ] && return 1
+		[ -z "$default" ] && make_menu -p "Which $pkg version?" \
+			|| make_menu -p "Which $pkg version? (e.g. $default)"
 		read version
 	fi
 	status=$(which $pkg &> /dev/null; echo $?)
