@@ -33,15 +33,18 @@ install_tex(){
 	
 	[ -z $apps_dir ] && apps_dir=$HOME/apps
 	work_dir=$apps_dir/downloads
-	curr_yr=`date +%Y`
+	curr_yr=$(date +%Y)
 	inst_dir=$apps_dir/texlive
+	if [ ! -d $inst_dir/$curr_yr ]; then
+		[ ! $(ls $inst_dir | grep -v "texmf" | wc -l) -eq 0 ] \
+			&& curr_yr=$(ls $inst_dir | grep -v "texmf" | sort -n | tail -n 1)
+	fi
 	url=http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
 		[ ! -f $inst_dir/$curr_yr/bin/x86_64-linux/pdftex ] \
-			&& return 1
-		
+			&& echo -e "${red}Latex year missing${NC}" >&2 && return 1
 		echo -e "Loading texlive environment ..." >&2
 		update_env -e PATH -a "$inst_dir/$curr_yr/bin/x86_64-linux"
 		update_env -e MANPATH -a "$inst_dir/$curr_yr/texmf-dist/doc/man"
