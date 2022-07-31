@@ -460,6 +460,45 @@ prep_env_cmd(){
 	
 	echo $cmd
 }
+prep_pkgconfigs(){
+	# pc_dir = dir contains .pc$ files
+	local pkg pc_dir pc_fn
+	
+	while [ ! -z "$1" ]; do
+		case $1 in
+			-p | --pkg )
+				shift
+				pkg="$1"
+				;;
+			-d | --pc_dir )
+				shift
+				pc_dir="$1"
+				;;
+		esac
+		shift
+	done
+	
+	[ -z "$pkg" ] && echo "Add -p <pkg>" >&2 && return 1
+	[ -z "$pc_dir" ] && echo "Add -d <pc_dir>" >&2 && return 1
+	
+	update_env -e PKG_CONFIG_PATH -a "$pc_dir"
+	
+	for pc_fn in $(ls -l $pc_dir | grep -v "^l" \
+		tr -s ' ' | grep ".pc$" | cut -d ' ' --complement -f1-8 \
+		| tr '\n' ' '); do
+		
+		pkg-config --exists --print-errors $pc_fn >&2
+		[ ! $? -eq 0 ] \
+			&& echo -e "${red}Error load env $pkg $pc_fn${NC}" >&2 \
+			&& return 1
+		CPPFLAGS="$CPPFLAGS $(pkg-config --cflags $pc_fn)"
+		LDFLAGS="$LDFLAGS $(pkg-config --libs $pc_fn)"
+		
+	done
+	
+	return 0
+	
+}
 
 # Ready install functions
 install_gcc(){
@@ -581,14 +620,9 @@ install_ncurses(){
 	if [ $load_env -eq 1 ]; then
 		[ ! -f $inst_dir/lib/ncurses.pc ] \
 			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib"
-		pkg-config --exists --print-errors ncurses >&2 \
-			|| return 1
-		[ ! -f $inst_dir/bin/ncurses${v1}-config ] \
-			&& echo -e "Install $pkg_ver" >&2 \
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
 			&& return 1
-		CPPFLAGS="$CPPFLAGS `pkg-config --cflags ncurses`"
-		LDFLAGS="$LDFLAGS `pkg-config --libs ncurses`"
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		return 0
@@ -629,9 +663,11 @@ install_readline(){
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
-		CPPFLAGS="$CPPFLAGS -I$inst_dir/include -I$inst_dir/include/readline"
-		LDFLAGS="$LDFLAGS -L$inst_dir/lib"
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
+		[ ! -f $inst_dir/lib/pkgconfig/readline.pc ] \
+			&& return 1
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		return 0
 	fi
@@ -671,16 +707,12 @@ install_xz(){
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
-		[ ! -f $inst_dir/lib/pkgconfig/liblzma.pc ] \
-			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
-		pkg-config --exists --print-errors liblzma >&2 \
-			|| return 1
 		[ ! -f $inst_dir/bin/xz ] \
 			&& echo -e "Install $pkg_ver" >&2 \
 			&& return 1
-		CPPFLAGS="$CPPFLAGS `pkg-config --cflags liblzma`"
-		LDFLAGS="$LDFLAGS `pkg-config --libs liblzma`"
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		return 0
@@ -722,17 +754,12 @@ install_bzip2(){
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
-		[ ! -d $inst_dir/lib/pkgconfig ] \
-			&& echo -e "pkgconfig issue for $pkg_ver" >&2 \
-			&& return 1
 		[ ! -f $inst_dir/bin/bzip2 ] \
 			&& echo -e "Install $pkg_ver" >&2 \
 			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
-		pkg-config --exists --print-errors bzip2 >&2 \
-			|| return 1
-		CPPFLAGS="$CPPFLAGS `pkg-config --cflags bzip2`"
-		LDFLAGS="$LDFLAGS `pkg-config --libs bzip2`"
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		update_env -e CPATH -a "$inst_dir/include"
@@ -793,16 +820,12 @@ install_pcre2(){
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
-		[ ! -d $inst_dir/lib/pkgconfig ] \
-			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
-		pkg-config --exists --print-errors libpcre2-8 >&2 \
-			|| return 1
 		[ ! -f $inst_dir/bin/pcre2-config ] \
 			&& echo -e "Install $pkg_ver" >&2 \
 			&& return 1
-		CPPFLAGS="$CPPFLAGS `pkg-config --cflags libpcre2-8`"
-		LDFLAGS="$LDFLAGS `pkg-config --libs libpcre2-8`"
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		return 0
@@ -843,16 +866,12 @@ install_zlib(){
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
-		[ ! -f $inst_dir/lib/pkgconfig/zlib.pc ] \
-			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
-		pkg-config --exists --print-errors zlib >&2 \
-			|| return 1
 		[ ! -f $inst_dir/include/zlib.h ] \
 			&& echo -e "Install $pkg_ver" >&2 \
 			&& return 1
-		CPPFLAGS="$CPPFLAGS `pkg-config --cflags zlib`"
-		LDFLAGS="$LDFLAGS `pkg-config --libs zlib`"
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		return 0
 	fi
@@ -888,16 +907,12 @@ install_curl(){
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
-		[ ! -f $inst_dir/lib/pkgconfig/libcurl.pc ] \
-			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
-		pkg-config --exists --print-errors libcurl >&2 \
-			|| return 1
 		[ ! -f $inst_dir/bin/curl-config ] \
 			&& echo -e "Install $pkg_ver" >&2 \
 			&& return 1
-		CPPFLAGS="$CPPFLAGS `pkg-config --cflags libcurl`"
-		LDFLAGS="$LDFLAGS `pkg-config --libs libcurl`"
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		return 0
@@ -933,20 +948,17 @@ install_libxml2(){
 	
 	install_args $@ -p libxml2 -d 2.9.2; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
-	url=ftp://xmlsoft.org/libxml2/libxml2-${version}.tar.gz
+	url=ftp://xmlsoft.org/$pkg/$pkg-${version}.tar.gz
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
-		[ ! -f $inst_dir/lib/pkgconfig/libxml-2.0.pc ] \
-			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
-		pkg-config --exists --print-errors libxml-2.0 >&2 \
-			|| return 1
 		[ ! -f $inst_dir/bin/xml2-config ] \
 			&& echo -e "Install $pkg_ver" >&2 \
 			&& return 1
-		CPPFLAGS="$CPPFLAGS `pkg-config --cflags libxml-2.0`"
-		LDFLAGS="$LDFLAGS `pkg-config --libs libxml-2.0`"
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		update_env -e PATH -a "$inst_dir/bin"
 		return 0
 	fi
@@ -981,20 +993,16 @@ install_libpng(){
 	
 	install_args $@ -p libpng -d 1.6.37; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
-	url=https://download.sourceforge.net/libpng/libpng-${version}.tar.gz
+	url=https://download.sourceforge.net/$pkg/$pkg-$version.tar.gz
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
-		[ ! -f $inst_dir/lib/pkgconfig/libpng16.pc ] \
-			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
-		pkg-config --exists --print-errors libpng >&2 \
-			|| return 1
 		[ ! -f $inst_dir/bin/libpng16-config ] \
 			&& echo -e "Install $pkg_ver" >&2 \
 			&& return 1
-		CPPFLAGS="$CPPFLAGS `pkg-config --cflags libpng`"
-		LDFLAGS="$LDFLAGS `pkg-config --libs libpng`"
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		return 0
@@ -1012,9 +1020,12 @@ install_libpng(){
 	eval $cmd >&2 || return 1
 	
 	# Install
-	$down_dir/configure CPPFLAGS="$CPPFLAGS" \
-		LDFLAGS="$LDFLAGS" --prefix=$inst_dir >&2 \
-		&& make >&2 && make install >&2
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
 	
 	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
@@ -1034,11 +1045,9 @@ install_freetype(){
 	if [ $load_env -eq 1 ]; then
 		[ ! -f $inst_dir/lib/pkgconfig/freetype2.pc ] \
 			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
-		pkg-config --exists --print-errors freetype2 >&2 \
-			|| return 1
-		CPPFLAGS="$CPPFLAGS `pkg-config --cflags freetype2`"
-		LDFLAGS="$LDFLAGS `pkg-config --libs freetype2`"
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
 		update_env -e PATH -a "$inst_dir"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		return 0
@@ -1056,9 +1065,12 @@ install_freetype(){
 	eval $cmd >&2 || return 1
 	
 	# Install
-	$down_dir/configure CPPFLAGS="$CPPFLAGS" \
-		LDFLAGS="$LDFLAGS" --prefix=$inst_dir >&2 \
-		&& make >&2 && make install >&2
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
 	
 	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
@@ -1077,11 +1089,9 @@ install_pixman(){
 	if [ $load_env -eq 1 ]; then
 		[ ! -f $inst_dir/lib/pkgconfig/pixman-1.pc ] \
 			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
-		pkg-config --exists --print-errors pixman-1 >&2 \
-			|| return 1
-		CPPFLAGS="$CPPFLAGS `pkg-config --cflags pixman-1`"
-		LDFLAGS="$LDFLAGS `pkg-config --libs pixman-1`"
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		return 0
 	fi
@@ -1099,9 +1109,12 @@ install_pixman(){
 	eval $cmd >&2 || return 1
 	
 	# Install
-	$down_dir/configure CPPFLAGS="$CPPFLAGS" \
-		LDFLAGS="$LDFLAGS" --prefix=$inst_dir >&2 \
-		&& make >&2 && make install >&2
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
 	
 	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
@@ -1118,15 +1131,11 @@ install_cairo(){
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
-		[ ! -f $inst_dir/lib/pkgconfig/cairo.pc ] \
-			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
-		pkg-config --exists --print-errors cairo >&2 \
-			|| return 1
 		[ ! -f $inst_dir/bin/cairo-trace ] \
 			&& return 1
-		CPPFLAGS="$CPPFLAGS `pkg-config --cflags cairo`"
-		LDFLAGS="$LDFLAGS `pkg-config --libs cairo`"
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		return 0
@@ -1255,16 +1264,12 @@ install_expat(){
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
-		[ ! -f $inst_dir/lib/pkgconfig/expat.pc ] \
-			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
-		pkg-config --exists --print-errors expat >&2 \
-			|| return 1
 		[ ! -f $inst_dir/bin/xmlwf ] \
 			&& echo -e "Install $pkg_ver" >&2 \
 			&& return 1
-		CPPFLAGS="$CPPFLAGS `pkg-config --cflags expat`"
-		LDFLAGS="$LDFLAGS `pkg-config --libs expat`"
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		export EXPATLIBPATH=$inst_dir/lib
