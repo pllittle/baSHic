@@ -30,7 +30,8 @@ install_R(){
 	ncores=`get_ncores`
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc tex libtool \
 		ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
-		freetype pixman cairo gperf cmake Python fontconfig icu)
+		freetype pixman cairo gperf cmake Python fontconfig)
+	# icu
 	eval $cmd >&2 || return 1
 	# && install_ICU -a $apps_dir -e
 	# && install_anaconda -a $apps_dir -e
@@ -150,15 +151,17 @@ run_R(){
 		[ $(echo $LD_LIBRARY_PATH | grep "gcc" | wc -l) -eq 0 ] \
 			&& cmd=$(prep_env_cmd -p gcc tex libtool \
 			ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
-			freetype pixman cairo gperf fontconfig cmake icu) \
+			freetype pixman cairo gperf fontconfig cmake) \
 			&& eval $cmd >&2
+			# icu
 		R_dir=$apps_dir/R-$version/bin
 	elif check_array $curr_host uthsc; then
 		[ $(echo $LD_LIBRARY_PATH | grep "pixman" | wc -l) -eq 0 ] \
 			&& cmd=$(prep_env_cmd -p gcc tex libtool \
 			ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
-			freetype pixman cairo gperf cmake Python fontconfig icu) \
+			freetype pixman cairo gperf cmake Python fontconfig) \
 			&& eval $cmd >&2
+			# icu
 		R_dir=$apps_dir/R-$version/bin
 	else
 		print_notOpt
