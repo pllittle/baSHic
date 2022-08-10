@@ -10,9 +10,49 @@ for fn in install linux_latex \
 done
 
 # Installation
+chk_CRAN(){
+	local url cmd tmp_cnt orig_dir
+	
+	orig_dir=$(pwd)
+	cd $HOME
+	url=https://cran.r-project.org/src/base/R-4/
+	cmd="curl '$url' --fail -s -L -D header.txt -o body.html"
+	echo $cmd >&2
+	eval $cmd >&2
+	[ ! $? -eq 0 ] && cd $orig_dir \
+		&& echo -e "${red}Error with curl${NC}" >&2 && return 1
+	
+	# Check header
+	tmp_cnt=$(grep "^HTTP" header.txt | tail -n 1 \
+		| grep "200 OK" | wc -l)
+	[ ! $tmp_cnt -eq 1 ] && echo -e "${red}Error with curl header${NC}" >&2 \
+		&& new_rm header.txt body.html && cd $orig_dir && return 1
+	
+	# Parse body.html
+	cmd="cat body.html | sed 's|^ *||g'"
+	cmd="$cmd | tr '\n' ' ' | sed 's|</tr>|</tr>\n|g'"
+	cmd="$cmd | sed 's|^ *<tr>|<tr>|g'"
+	cmd="$cmd | grep 'tar.gz' | sed 's|</td>|</td>\n|g'"
+	cmd="$cmd | sed 's|<td \(.*\)>\(.*\)</td>|<td>\\2</td>|g'"
+	cmd="$cmd | grep -v nbsp | sed 's|<td>\(.*\)</td>|\\1|g'"
+	cmd="$cmd | tr '\n' ' ' | sed 's|> <|><|g'"
+	cmd="$cmd | sed 's|</tr>|</tr>\n|g' | sed 's|^<tr>||g'"
+	cmd="$cmd | sed 's|</tr>||g' | sed 's|.tar.gz||g'"
+	cmd="$cmd | sed 's|<a \(.*\)>\(.*\)</a>|\\2|g'"
+	cmd="$cmd | tr -s ' ' | cut -d ' ' -f1-4 | sed 's| |\t|g'"
+	# echo $cmd >&2
+	echo -e "${purple}Most recent R versions${NC}" >&2
+	eval $cmd | column -ts $'\t' | awk '{print "   " $0}' >&2
+	new_rm header.txt body.html
+	
+	cd $orig_dir
+	
+}
 install_R(){
 	local version v1 pkg pkg_ver apps_dir status
 	local url inst_dir down_dir ncores resp cmd
+	
+	chk_CRAN
 	
 	install_args $@ -p R -d 4.1.2; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
