@@ -17,7 +17,6 @@ chk_CRAN(){
 	cd $HOME
 	url=https://cran.r-project.org/src/base/R-4/
 	cmd="curl '$url' --fail -s -L -D header.txt -o body.html"
-	echo $cmd >&2
 	eval $cmd >&2
 	[ ! $? -eq 0 ] && cd $orig_dir \
 		&& echo -e "${red}Error with curl${NC}" >&2 && return 1
