@@ -198,7 +198,7 @@ run_R(){
 		[ $(echo $LD_LIBRARY_PATH | grep "pixman" | wc -l) -eq 0 ] \
 			&& cmd=$(prep_env_cmd -p gcc tex libtool \
 			ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
-			freetype pixman cairo gperf cmake Python fontconfig) \
+			freetype pixman cairo gperf cmake Python fontconfig gsl) \
 			&& eval $cmd >&2
 			# icu
 		R_dir=$apps_dir/R-$version/bin
