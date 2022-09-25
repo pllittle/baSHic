@@ -190,7 +190,7 @@ run_R(){
 		[ $(echo $LD_LIBRARY_PATH | grep "gcc" | wc -l) -eq 0 ] \
 			&& cmd=$(prep_env_cmd -p gcc tex libtool \
 			ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
-			freetype pixman cairo gperf Python fontconfig cmake) \
+			freetype pixman cairo gperf fontconfig cmake) \
 			&& eval $cmd >&2
 			# icu
 		R_dir=$apps_dir/R-$version/bin
