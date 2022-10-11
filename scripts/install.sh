@@ -484,10 +484,10 @@ prep_pkgconfigs(){
 	update_env -e PKG_CONFIG_PATH -a "$pc_dir"
 	
 	for pc_fn in $(ls -l $pc_dir | grep -v "^l" \
-		tr -s ' ' | grep ".pc$" | cut -d ' ' --complement -f1-8 \
+		| tr -s ' ' | grep ".pc$" | cut -d ' ' --complement -f1-8 \
 		| tr '\n' ' '); do
 		
-		echo -e "pc_fn = $pc_fn" >&2
+		# echo -e "pc_fn = $pc_fn" >&2
 		pkg-config --exists --print-errors $pc_fn >&2
 		[ ! $? -eq 0 ] \
 			&& echo -e "${red}Error load env $pkg $pc_fn${NC}" >&2 \
