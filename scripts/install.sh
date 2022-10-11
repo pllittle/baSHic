@@ -490,7 +490,7 @@ prep_pkgconfigs(){
 		# echo -e "pc_fn = $pc_fn" >&2
 		pkg-config --exists --print-errors $pc_fn >&2
 		[ ! $? -eq 0 ] \
-			&& echo -e "${red}Error load env $pkg $pc_fn${NC}" >&2 \
+			&& echo -e "${red}Error load env $pkg's pc file $pc_fn${NC}" >&2 \
 			&& return 1
 		CPPFLAGS="$CPPFLAGS $(pkg-config --cflags $pc_fn)"
 		LDFLAGS="$LDFLAGS $(pkg-config --libs $pc_fn)"
