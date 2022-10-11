@@ -462,7 +462,7 @@ prep_env_cmd(){
 }
 prep_pkgconfigs(){
 	# pc_dir = dir contains .pc$ files
-	local pkg pc_dir pc_fn
+	local pkg pc_dir pc_fn pc_fn2
 	
 	while [ ! -z "$1" ]; do
 		case $1 in
@@ -487,13 +487,15 @@ prep_pkgconfigs(){
 		| tr -s ' ' | grep ".pc$" | cut -d ' ' --complement -f1-8 \
 		| tr '\n' ' '); do
 		
+		pc_fn2=$(echo $pc_fn | sed 's|.pc$||g')
+		
 		# echo -e "pc_fn = $pc_fn" >&2
-		pkg-config --exists --print-errors $pc_fn >&2
+		pkg-config --exists --print-errors $pc_fn2 >&2
 		[ ! $? -eq 0 ] \
 			&& echo -e "${red}Error load env $pkg's pc file $pc_fn${NC}" >&2 \
 			&& return 1
-		CPPFLAGS="$CPPFLAGS $(pkg-config --cflags $pc_fn)"
-		LDFLAGS="$LDFLAGS $(pkg-config --libs $pc_fn)"
+		CPPFLAGS="$CPPFLAGS $(pkg-config --cflags $pc_fn2)"
+		LDFLAGS="$LDFLAGS $(pkg-config --libs $pc_fn2)"
 		
 	done
 	
