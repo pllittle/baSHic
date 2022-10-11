@@ -487,6 +487,7 @@ prep_pkgconfigs(){
 		tr -s ' ' | grep ".pc$" | cut -d ' ' --complement -f1-8 \
 		| tr '\n' ' '); do
 		
+		echo -e "pc_fn = $pc_fn" >&2
 		pkg-config --exists --print-errors $pc_fn >&2
 		[ ! $? -eq 0 ] \
 			&& echo -e "${red}Error load env $pkg $pc_fn${NC}" >&2 \
