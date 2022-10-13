@@ -24,14 +24,10 @@ install_openssl(){
 		[ ! -d $inst_dir/lib64/pkgconfig ] \
 			&& echo -e "Install $pkg_ver" >&2 \
 			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib64/pkgconfig"
-		local pc_fn
-		for pc_fn in `ls $inst_dir/lib64/pkgconfig | grep "pc$" | sed 's|.pc$||g'`; do
-			pkg-config --exists --print-errors $pc_fn >&2 \
-				|| return 1
-			CPPFLAGS="$CPPFLAGS `pkg-config --cflags $pc_fn`"
-			LDFLAGS="$LDFLAGS `pkg-config --libs $pc_fn`"
-		done
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib64/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
+		# update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib64/pkgconfig"
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib64"
 		update_env -e CPATH -a "$inst_dir/include"
@@ -82,14 +78,9 @@ install_Python(){
 		[ ! -f $inst_dir/bin/python${v1} ] \
 			&& echo -e "Install $pkg_ver" >&2 \
 			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
-		local pc_fn
-		for pc_fn in `ls $inst_dir/lib/pkgconfig | grep "python-$v1" | sed 's|.pc$||g'`; do
-			pkg-config --exists --print-errors $pc_fn >&2 \
-				|| return 1
-			CPPFLAGS="$CPPFLAGS `pkg-config --cflags $pc_fn`"
-			LDFLAGS="$LDFLAGS `pkg-config --libs $pc_fn`"
-		done
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		update_env -e LIBRARY_PATH -a "$inst_dir/lib"
@@ -267,13 +258,9 @@ install_fontconfig(){
 		[ ! -f $inst_dir/bin/fc-cat ] \
 			&& echo -e "Install $pkg_ver" >&2 \
 			&& return 1
-		[ ! -f $inst_dir/lib/pkgconfig/fontconfig.pc ] \
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
 			&& return 1
-		update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib/pkgconfig"
-		pkg-config --exists --print-errors fontconfig >&2 \
-			|| return 1
-		CPPFLAGS="$CPPFLAGS `pkg-config --cflags fontconfig`"
-		LDFLAGS="$LDFLAGS `pkg-config --libs fontconfig`"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		return 0
 	fi
