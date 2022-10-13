@@ -310,6 +310,7 @@ install_boost(){
 			&& echo -e "Install $pkg_ver!" >&2 \
 			&& return 1
 		update_env -e BOOST_ROOT -a "$inst_dir"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/stage/lib"
 		return 0
 	fi
 	
