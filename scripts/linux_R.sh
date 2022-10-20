@@ -189,8 +189,9 @@ run_R(){
 	if check_array $curr_host longleaf dogwood bioinf hutch; then
 		[ $(echo $LD_LIBRARY_PATH | grep "gcc" | wc -l) -eq 0 ] \
 			&& cmd=$(prep_env_cmd -p gcc tex libtool \
-			ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
-			freetype pixman cairo gperf fontconfig cmake) \
+			ncurses readline bzip2 xz pcre2 zlib curl \
+			libxml2 libpng freetype pixman cmake cairo \
+			gperf perl openssl Python fontconfig) \
 			&& eval $cmd >&2
 			# icu
 		R_dir=$apps_dir/R-$version/bin
