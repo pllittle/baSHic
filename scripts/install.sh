@@ -691,7 +691,7 @@ install_readline(){
 	cmd="$down_dir/configure"
 	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
 	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
-	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd --prefix=$inst_dir --with-curses >&2"
 	cmd="$cmd && make >&2 && make install >&2"
 	eval $cmd
 	
