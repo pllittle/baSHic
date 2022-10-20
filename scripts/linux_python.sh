@@ -12,7 +12,8 @@ done
 # Python Related Functions
 install_openssl(){
 	local version v1 pkg pkg_ver apps_dir status
-	local url inst_dir down_dir load_env cmd
+	local url inst_dir down_dir load_env cmd 
+	local num_lib tmp_lib
 	
 	install_args $@ -p openssl -d "1.0.2, 1.1.1m, 3.0.2"; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
@@ -21,15 +22,22 @@ install_openssl(){
 	
 	# Load environment
 	if [ $load_env -eq 1 ]; then
-		[ ! -d $inst_dir/lib64/pkgconfig ] \
+		num_lib=0
+		for tmp_lib in lib lib64; do
+			[ ! -d $inst_dir/$tmp_lib/pkgconfig ] \
+				&& continue
+			prep_pkgconfigs -p $pkg -d $inst_dir/$tmp_lib/pkgconfig
+			[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+				&& return 1
+			update_env -e LD_LIBRARY_PATH -a "$inst_dir/$tmp_lib"
+			let num_lib=num_lib+1
+		done
+		
+		[ $num_lib -eq 0 ] \
 			&& echo -e "Install $pkg_ver" >&2 \
 			&& return 1
-		prep_pkgconfigs -p $pkg -d $inst_dir/lib64/pkgconfig
-		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
-			&& return 1
-		# update_env -e PKG_CONFIG_PATH -a "$inst_dir/lib64/pkgconfig"
+		
 		update_env -e PATH -a "$inst_dir/bin"
-		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib64"
 		update_env -e CPATH -a "$inst_dir/include"
 		return 0
 	fi
