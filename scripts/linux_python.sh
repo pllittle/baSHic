@@ -42,7 +42,7 @@ install_openssl(){
 	install_perl_modules -m Text::Template Test::More
 	
 	# Set environment
-	clear_env
+	clear_env -o
 	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		zlib perl)
@@ -97,7 +97,7 @@ install_Python(){
 	cd $inst_dir
 	
 	# Set environment
-	clear_env
+	clear_env -o
 	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		openssl ncurses readline bzip2 zlib)
@@ -169,7 +169,7 @@ install_pip(){
 	[ -z $apps_dir ] && apps_dir=$HOME/apps
 	
 	# Set environment
-	clear_env
+	clear_env -o
 	local PYTHONHOME CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		ncurses readline bzip2 zlib Python)
@@ -224,7 +224,7 @@ install_pymod(){
 		&& echo -ne "module>=version>${NC}\n" >&2 && return 1
 	
 	# Set environment
-	clear_env
+	clear_env -o
 	local PYTHONHOME CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		zlib perl openssl ncurses readline bzip2 Python)
@@ -237,9 +237,6 @@ install_pymod(){
 			&& return 1
 		echo -e "Installed $mod!${NC}" >&2
 	done
-	
-	# Remove python from PATH
-	# clear_env
 	
 	return 0
 	
@@ -271,7 +268,7 @@ install_fontconfig(){
 	cd $inst_dir
 	
 	# Set environment
-	clear_env
+	clear_env -o
 	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		libxml2 freetype gperf ncurses readline bzip2 \
@@ -322,7 +319,7 @@ install_boost(){
 	cd $inst_dir
 	
 	# Clear environment
-	clear_env
+	clear_env -o
 	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool Python)
 	eval $cmd >&2 || return 1

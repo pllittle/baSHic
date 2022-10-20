@@ -36,7 +36,7 @@ install_perl(){
 	mv $down_dir $inst_dir
 	cd $inst_dir
 	
-	clear_env
+	clear_env -o
 	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
 	eval $cmd >&2 || return 1
@@ -109,7 +109,7 @@ install_perl_modules(){
 	[ -z "${mods[0]}" ] && echo "Add -m <array of perl modules>" >&2 && return 1
 	
 	# Set environment
-	clear_env
+	clear_env -o
 	local CPPFLAGS LDFLAGS
 	cmd0="prep_env_cmd -a $apps_dir -p gcc libtool perl"
 	if [ ! -z ${deps[0]} ]; then
