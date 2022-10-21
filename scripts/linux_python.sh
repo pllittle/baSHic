@@ -118,7 +118,7 @@ install_Python(){
 	cmd="$cmd --prefix=$inst_dir"
 	if [ $(which openssl > /dev/null; echo $?) -eq 0 ]; then
 		local ssl_root_dir=$(cd $(which openssl \
-			| sed 's|openssl$||'); cd ..; pwd)
+			| sed 's|/bin/openssl$||'); cd ..; pwd)
 		cmd="$cmd --with-openssl=$ssl_root_dir"
 	else
 		echo -e "${red}No openssl found, quitting${NC}" >&2
