@@ -64,7 +64,7 @@ install_R(){
 	cd $inst_dir
 	
 	# Set environment
-	clear_env
+	clear_env -o
 	local CPPFLAGS LDFLAGS
 	ncores=`get_ncores`
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc tex libtool \

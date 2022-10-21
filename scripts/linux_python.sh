@@ -279,7 +279,7 @@ install_fontconfig(){
 	clear_env -o
 	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
-		libxml2 freetype gperf ncurses readline bzip2 \
+		libxml2 freetype gperf openssl ncurses readline bzip2 \
 		zlib Python)
 	eval $cmd >&2 || return 1
 	
