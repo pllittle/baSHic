@@ -279,8 +279,8 @@ install_fontconfig(){
 	clear_env -o
 	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
-		libxml2 freetype gperf openssl ncurses readline bzip2 \
-		zlib Python)
+		libxml2 freetype gperf zlib ncurses readline bzip2 \
+		openssl Python)
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -329,7 +329,8 @@ install_boost(){
 	# Clear environment
 	clear_env -o
 	local CPPFLAGS LDFLAGS
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool Python)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+		openssl ncurses readline bzip2 zlib Python)
 	eval $cmd >&2 || return 1
 	
 	# Install
