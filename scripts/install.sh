@@ -703,8 +703,7 @@ install_readline(){
 		pc_fn=$inst_dir/lib/pkgconfig/readline.pc
 		chk_termcap=$(grep "$tmp_str" $pc_fn | wc -l)
 		[ $chk_termcap -eq 1 ] \
-			&& sed -i 's|$tmp_str|Requires.private: ncurses|' \
-				$pc_fn
+			&& sed -i "s|$tmp_str|Requires.private: ncurses|" $pc_fn
 	fi
 	return $status
 	
