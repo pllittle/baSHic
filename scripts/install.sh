@@ -697,6 +697,9 @@ install_readline(){
 	
 	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
+	[ $status -eq 0 ] \
+		&& sed -i 's|Requires.private: termcap|Requires.private: ncurses|' \
+			$inst_dir/lib/pkgconfig/readline.pc
 	return $status
 	
 }
