@@ -69,8 +69,8 @@ install_R(){
 	ncores=`get_ncores`
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
-		freetype pixman cairo gperf cmake 
-		perl openssl tex Python fontconfig)
+		freetype pixman cairo gperf cmake perl openssl tex Python \
+		fontconfig)
 	# icu
 	eval $cmd >&2 || return 1
 	# && install_ICU -a $apps_dir -e
