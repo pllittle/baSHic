@@ -70,7 +70,7 @@ install_R(){
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
 		freetype pixman cairo gperf cmake perl openssl tex Python \
-		fontconfig)
+		fontconfig icu nlopt)
 	# icu
 	eval $cmd >&2 || return 1
 	# && install_ICU -a $apps_dir -e
