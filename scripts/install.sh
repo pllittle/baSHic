@@ -1399,7 +1399,163 @@ install_pkgconfig(){
 	return $status
 	
 }
-
+install_icu(){
+	local version v2 pkg pkg_ver apps_dir status 
+	local url inst_dir down_dir resp
+	local ncores load_env cmd some_cmd pc_fn
+	
+	install_args $@ -p icu -d 64.2; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	v2=$(echo $version | sed 's|\.|-|g')
+	url=https://github.com/unicode-org/icu/archive
+	url=$url/refs/tags/release-$v2.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/bin/icu-config ] \
+			&& return 1
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		update_env -e PATH -a "$inst_dir/bin"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	# Rename down_dir
+	down_dir=$(echo $down_dir | sed "s|$pkg_ver|icu-release-$v2|")
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env -o
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/icu4c/source/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	eval $cmd
+	status=$?
+	[ ! $status -eq 0 ] && echo "Error in configuration" >&2
+	
+	if [ $status -eq 0 ]; then
+		while true; do
+			make_menu -c "$yellow" -p "Run make or gmake?" \
+				-o "1) make" "2) gmake"
+			read resp
+			[ -z "$resp" ] && print_noInput && continue
+			check_array $resp 1 2
+			[ ! $? -eq 0 ] && print_notOpt && continue
+			[ $resp -eq 1 ] && some_cmd="make"
+			[ $resp -eq 2 ] && some_cmd="gmake"
+			break
+		done
+		cmd="$some_cmd >&2 && $some_cmd check >&2"
+		cmd="$cmd && $some_cmd -i install >&2"
+		eval $cmd
+		status=$?
+	fi
+	
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_gsl(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir ncores load_env
+	
+	install_args $@ -p gsl -d 2.4; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=ftp://ftp.gnu.org/gnu/gsl/gsl-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/bin/gsl-config ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env -o
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make check >&2"
+	cmd="$cmd && make install >&2 && make installcheck >&2"
+	eval $cmd
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+install_nlopt(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir ncores load_env
+	
+	install_args $@ -p nlopt -d 2.7.1; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://github.com/stevengj/nlopt/archive/refs/tags/v${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		local dirname
+		for dirname in lib lib64; do
+			[ ! -d $inst_dir/$dirname ] && continue
+			prep_pkgconfigs -p $pkg -d $inst_dir/$dirname/pkgconfig
+			[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+				&& return 1
+			update_env -e LD_LIBRARY_PATH -a "$inst_dir/$dirname"
+		done
+		update_env -e CPATH -a "$inst_dir/include"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env -o
+	ncores=`get_ncores`
+	[ -z $ncores ] && ncores=1
+	local CPPFLAGS LDFLAGS # CPPFLAGS=; LDFLAGS=;
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool cmake)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmake -DCMAKE_INSTALL_PREFIX=$inst_dir $down_dir >&2 \
+		&& make >&2 && make install >&2
+	
+	status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
 
 
 src_install=1
