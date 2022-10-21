@@ -697,9 +697,15 @@ install_readline(){
 	
 	status=$?
 	install_wrapup -s $status -i $inst_dir -d $down_dir
-	[ $status -eq 0 ] \
-		&& sed -i 's|Requires.private: termcap|Requires.private: ncurses|' \
-			$inst_dir/lib/pkgconfig/readline.pc
+	if [ $status -eq 0 ]; then
+		local tmp_str pc_fn chk_termcap
+		tmp_str="Requires.private: termcap"
+		pc_fn=$inst_dir/lib/pkgconfig/readline.pc
+		chk_termcap=$(grep "$tmp_str" $pc_fn | wc -l)
+		[ $chk_termcap -eq 1 ] \
+			&& sed -i 's|$tmp_str|Requires.private: ncurses|' \
+				$pc_fn
+	fi
 	return $status
 	
 }
