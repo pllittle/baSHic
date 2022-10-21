@@ -160,7 +160,8 @@ update_env(){
 	
 	# Write to path_fn
 	if check_array $env_var PATH LD_LIBRARY_PATH PYTHONPATH \
-		LIBRARY_PATH PKG_CONFIG_PATH CPATH MANPATH BOOST_ROOT; then
+		LIBRARY_PATH PKG_CONFIG_PATH CPATH MANPATH BOOST_ROOT \
+		ACLOCAL_PATH; then
 		cmd="input_var=\$$env_var"
 		eval $cmd
 	else
@@ -214,7 +215,8 @@ update_env(){
 	
 	# Update env_var
 	if check_array $env_var PATH LD_LIBRARY_PATH PYTHONPATH \
-		LIBRARY_PATH PKG_CONFIG_PATH CPATH MANPATH BOOST_ROOT; then
+		LIBRARY_PATH PKG_CONFIG_PATH CPATH MANPATH BOOST_ROOT \
+		ACLOCAL_PATH; then
 		cmd="export $env_var=$out_var"
 		eval $cmd
 	else
@@ -256,7 +258,8 @@ clear_env(){
 	for env_var in PKG_CONFIG_PATH PYTHONPATH CPPFLAGS \
 		LDFLAGS CC CXX CPATH PERL5LIB PERL_LOCAL_LIB_ROOT \
 		PERL_MB_OPT PERL_MM_OPT MANPATH BOOST_ROOT EXPATLIBPATH \
-		EXPATINCPATH DB_FILE_LIB DB_FILE_INCLUDE HTSLIB_DIR; do
+		EXPATINCPATH DB_FILE_LIB DB_FILE_INCLUDE HTSLIB_DIR \
+		ACLOCAL_PATH; do
 		
 		cmd="$cmd $env_var"
 	done

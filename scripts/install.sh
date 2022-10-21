@@ -1360,6 +1360,48 @@ install_db(){
 	
 }
 
+install_pkgconfig(){
+	local version pkg pkg_ver apps_dir status
+	local url inst_dir down_dir ncores load_env
+	
+	install_args $@ -p pkg-config -d 0.29.2; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://pkg-config.freedesktop.org/releases/${pkg}-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/bin/${pkg} ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e ACLOCAL_PATH -a "$inst_dir/share/aclocal"
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env -o
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	$down_dir/configure --prefix=$inst_dir \
+		--with-internal-glib >&2 \
+		&& make >&2 && make install >&2
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
+
+
+
 src_install=1
 
 ###
