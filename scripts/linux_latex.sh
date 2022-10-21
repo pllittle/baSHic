@@ -66,7 +66,7 @@ install_tex(){
 	fi
 	
 	# Set environment
-	clear_env
+	clear_env -o
 	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool perl)
 	eval $cmd >&2 || return 1
