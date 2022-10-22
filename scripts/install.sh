@@ -181,7 +181,7 @@ show_exist_pkg(){
 install_args(){
 	local default status resp work_dir
 	
-	load_env=0
+	load_env=0; run_pack=0
 	while [ ! -z $1 ]; do
 		case $1 in
 			-v | --version )
@@ -202,6 +202,9 @@ install_args(){
 			-p | --pkg )
 				shift
 				pkg="$1"
+				;;
+			-r | --run_pack )
+				run_pack=1
 				;;
 		esac
 		shift
@@ -505,8 +508,9 @@ prep_pkgconfigs(){
 
 # Ready install functions
 install_gcc(){
-	local version pkg pkg_ver apps_dir status
+	local version pkg pkg_ver apps_dir status cmd
 	local url down_dir inst_dir ncores load_env
+	local run_pack
 	
 	install_args $@ -p gcc -d "9.4.0, 10.2.0"; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
@@ -522,6 +526,16 @@ install_gcc(){
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib64"
 		export CC=$inst_dir/bin/gcc
 		export CXX=$inst_dir/bin/g++
+		return 0
+	fi
+	
+	# Run package
+	if [ $run_pack -eq 1 ]; then
+		[ ! -z "$PATH" ] \
+			&& [ ! $(echo $PATH | grep "$pkg_ver" | wc -l) -eq 0 ] \
+			&& return 0
+		cmd=$(prep_env_cmd -a $apps_dir -p gcc)
+		eval $cmd >&2 || return 1
 		return 0
 	fi
 	
@@ -569,6 +583,7 @@ install_gcc(){
 install_libtool(){
 	local version pkg pkg_ver apps_dir status cmd
 	local url inst_dir down_dir load_env
+	local run_pack
 	
 	install_args $@ -p libtool -d 2.4.6; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
@@ -586,6 +601,16 @@ install_libtool(){
 		return 0
 	fi
 	
+	# Run package
+	if [ $run_pack -eq 1 ]; then
+		[ ! -z "$PATH" ] \
+			&& [ ! $(echo $PATH | grep "$pkg_ver" | wc -l) -eq 0 ] \
+			&& return 0
+		cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+		eval $cmd >&2 || return 1
+		return 0
+	fi
+	
 	extract_url -u $url -a $apps_dir -s $pkg_ver
 	[ $? -eq 1 ] && return 0
 	new_mkdir $inst_dir
@@ -593,7 +618,7 @@ install_libtool(){
 	
 	# Set environment
 	clear_env -o
-	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	local CPPFLAGS LDFLAGS
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc)
 	eval $cmd >&2 || return 1
 	
@@ -613,6 +638,7 @@ install_libtool(){
 install_ncurses(){
 	local version v1 pkg pkg_ver apps_dir status
 	local url inst_dir down_dir load_env cmd
+	local run_pack
 	
 	install_args $@ -p ncurses -d 6.2; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
@@ -628,6 +654,17 @@ install_ncurses(){
 			&& return 1
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	# Run package
+	if [ $run_pack -eq 1 ]; then
+		[ ! -z "$PATH" ] \
+			&& [ ! $(echo $PATH | grep "$pkg_ver" | wc -l) -eq 0 ] \
+			&& return 0
+		cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+			ncurses)
+		eval $cmd >&2 || return 1
 		return 0
 	fi
 	
@@ -659,6 +696,7 @@ install_ncurses(){
 install_readline(){
 	local version pkg pkg_ver apps_dir status cmd
 	local url inst_dir down_dir ncores load_env
+	local run_pack
 	
 	install_args $@ -p readline -d 8.2; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
@@ -672,6 +710,17 @@ install_readline(){
 		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
 			&& return 1
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	# Run package
+	if [ $run_pack -eq 1 ]; then
+		[ ! -z "$LD_LIBRARY_PATH" ] \
+			&& [ ! $(echo $LD_LIBRARY_PATH | grep "$pkg_ver" | wc -l) -eq 0 ] \
+			&& return 0
+		cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+			ncurses readline)
+		eval $cmd >&2 || return 1
 		return 0
 	fi
 	
@@ -711,6 +760,7 @@ install_readline(){
 install_xz(){
 	local version pkg pkg_ver apps_dir status cmd
 	local url inst_dir down_dir load_env
+	local run_pack
 	
 	install_args $@ -p xz -d 5.2.5; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
@@ -726,6 +776,16 @@ install_xz(){
 			&& return 1
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	# Run package
+	if [ $run_pack -eq 1 ]; then
+		[ ! -z "$PATH" ] \
+			&& [ ! $(echo $PATH | grep "$pkg_ver" | wc -l) -eq 0 ] \
+			&& return 0
+		cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool xz)
+		eval $cmd >&2 || return 1
 		return 0
 	fi
 	
@@ -756,9 +816,9 @@ install_xz(){
 install_bzip2(){
 	local version pkg pkg_ver apps_dir status
 	local url inst_dir down_dir ncores load_env
+	local run_pack
 	
 	# Source: https://github.com/libimobiledevice/sbmanager/issues/1
-	
 	install_args $@ -p bzip2 -d 1.0.6; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	url=https://sourceware.org/pub/bzip2/bzip2-$version.tar.gz
@@ -777,19 +837,30 @@ install_bzip2(){
 		return 0
 	fi
 	
+	# Run package
+	if [ $run_pack -eq 1 ]; then
+		[ ! -z "$PATH" ] \
+			&& [ ! $(echo $PATH | grep "$pkg_ver" | wc -l) -eq 0 ] \
+			&& return 0
+		cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool bzip2)
+		eval $cmd >&2 || return 1
+		return 0
+	fi
+	
 	extract_url -u $url -a $apps_dir -s $pkg_ver
 	[ $? -eq 1 ] && return 0
 	cd $down_dir
+	local repo_url=https://gist.githubusercontent.com/steakknife
 	[ ! -f bzip2-1.0.6-install_docs-1.patch ] \
-		&& wget https://gist.githubusercontent.com/steakknife/946f6ee331512a269145b293cbe898cc/raw/bzip2-1.0.6-install_docs-1.patch >&2
+		&& wget $repo_url/946f6ee331512a269145b293cbe898cc/raw/bzip2-1.0.6-install_docs-1.patch >&2
 	[ ! -f bzip2recover-CVE-2016-3189.patch ] \
-		&& wget https://gist.githubusercontent.com/steakknife/eceda09cae0cdb4900bcd9e479bab9be/raw/bzip2recover-CVE-2016-3189.patch >&2
+		&& wget $repo_url/eceda09cae0cdb4900bcd9e479bab9be/raw/bzip2recover-CVE-2016-3189.patch >&2
 	[ ! -f bzip2-man-page-location.patch ] \
-		&& wget https://gist.githubusercontent.com/steakknife/42feaa223adb4dd7c5c85f288794973c/raw/bzip2-man-page-location.patch >&2
+		&& wget $repo_url/42feaa223adb4dd7c5c85f288794973c/raw/bzip2-man-page-location.patch >&2
 	[ ! -f bzip2-shared-make-install.patch ] \
-		&& wget https://gist.githubusercontent.com/steakknife/94f8aa4bfa79a3f896a660bf4e973f72/raw/bzip2-shared-make-install.patch >&2
+		&& wget $repo_url/94f8aa4bfa79a3f896a660bf4e973f72/raw/bzip2-shared-make-install.patch >&2
 	[ ! -f bzip2-pkg-config.patch ] \
-		&& wget https://gist.githubusercontent.com/steakknife/4faee8a657db9402cbeb579279156e84/raw/bzip2-pkg-config.patch >&2
+		&& wget $repo_url/4faee8a657db9402cbeb579279156e84/raw/bzip2-pkg-config.patch >&2
 	patch -u < bzip2-1.0.6-install_docs-1.patch >&2 \
 		&& patch -u < bzip2recover-CVE-2016-3189.patch >&2 \
 		&& patch -u < bzip2-man-page-location.patch >&2 \
@@ -800,7 +871,7 @@ install_bzip2(){
 	
 	# Set environment
 	clear_env -o
-	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
+	local CPPFLAGS LDFLAGS;
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
 	eval $cmd >&2 || return 1
 	
@@ -808,14 +879,13 @@ install_bzip2(){
 	cd $down_dir
 	make install PREFIX=$inst_dir >&2 \
 		&& make clean >&2 \
-		&& make -f Makefile-libbz2_so >&2
+		&& make -f Makefile-libbz2_so >&2 \
+		&& mv bzip2-shared $inst_dir/bin/ \
+		&& mv libbz2.so.${version} $inst_dir/lib/ \
+		&& ln -s $inst_dir/lib/libbz2.so.${version} $inst_dir/lib/libbz2.so.1.0 \
+		&& ln -s $inst_dir/lib/libbz2.so.${version} $inst_dir/lib/libbz2.so
+	
 	status=$?
-	
-	mv bzip2-shared $inst_dir/bin/
-	mv libbz2.so.${version} $inst_dir/lib/
-	ln -s $inst_dir/lib/libbz2.so.${version} $inst_dir/lib/libbz2.so.1.0
-	ln -s $inst_dir/lib/libbz2.so.${version} $inst_dir/lib/libbz2.so
-	
 	install_wrapup -s $status -i $inst_dir -d $down_dir
 	return $status
 	
