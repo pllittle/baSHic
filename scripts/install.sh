@@ -660,7 +660,7 @@ install_readline(){
 	local version pkg pkg_ver apps_dir status cmd
 	local url inst_dir down_dir ncores load_env
 	
-	install_args $@ -p readline -d 6.0,8.0,8.1.2; status=$?
+	install_args $@ -p readline -d 8.2; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	url=https://ftp.gnu.org/gnu/readline/readline-${version}.tar.gz
 	
