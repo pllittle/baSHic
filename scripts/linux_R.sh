@@ -196,9 +196,9 @@ run_R(){
 		R_dir=$apps_dir/R-$version/bin
 	elif check_array $curr_host uthsc; then
 		[ $(echo $LD_LIBRARY_PATH | grep "pixman" | wc -l) -eq 0 ] \
-			&& cmd=$(prep_env_cmd -p gcc tex libtool \
-			ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
-			freetype pixman cairo gperf cmake Python fontconfig gsl) \
+			&& cmd=$(prep_env_cmd -p gcc libtool ncurses readline \
+				bzip2 xz pcre2 zlib curl libxml2 libpng freetype pixman \
+				cairo gperf cmake perl openssl tex Python fontconfig) \
 			&& eval $cmd >&2
 			# icu
 		R_dir=$apps_dir/R-$version/bin
