@@ -73,8 +73,6 @@ install_R(){
 		fontconfig)
 	# icu
 	eval $cmd >&2 || return 1
-	# && install_ICU -a $apps_dir -e
-	# && install_anaconda -a $apps_dir -e
 	
 	make_menu -y -p "Do the dependency statuses look good?"; read resp
 	if [ -z $resp ]; then
