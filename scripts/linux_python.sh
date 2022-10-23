@@ -74,12 +74,14 @@ install_openssl(){
 install_Python(){
 	local version v1 v2 pkg pkg_ver apps_dir cmd status
 	local url inst_dir down_dir load_env
+	local run_pack
 	
 	install_args $@ -p Python -d "3.8.4, 3.10.4"; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	url=https://www.python.org/ftp/python/$version/Python-$version.tgz
 	v1=$(echo $version | cut -d '.' -f1-2)
 	
+	# Load environment
 	if [ $load_env -eq 1 ]; then
 		[ ! -f $inst_dir/lib/pkgconfig/python-$v1.pc ] \
 			&& return 1
@@ -96,6 +98,17 @@ install_Python(){
 		update_env -e MANPATH -a "$inst_dir/share/man"
 		update_env -e PYTHONPATH -a "$inst_dir/lib/python$v1/site-packages"
 		update_env -e PYTHONPATH -a "$inst_dir/lib/python$v1"
+		return 0
+	fi
+	
+	# Run package
+	if [ $run_pack -eq 1 ]; then
+		[ ! -z "$PATH" ] \
+			&& [ ! $(echo $PATH | grep "$pkg_ver" | wc -l) -eq 0 ] \
+			&& return 0
+		cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+			openssl ncurses readline bzip2 zlib Python)
+		eval $cmd >&2 || return 1
 		return 0
 	fi
 	
