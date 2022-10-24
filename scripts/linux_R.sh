@@ -74,10 +74,8 @@ install_R(){
 	# icu
 	eval $cmd >&2 || return 1
 	
-	make_menu -y -p "Do the dependency statuses look good?"; read resp
-	if [ -z $resp ]; then
-		return 0
-	elif [ $resp -eq 1 ]; then
+	make_menu -y -p "Do the dependency statuses look good?"; read -t 10 resp
+	if [ -z $resp ] || [ $resp -eq 1 ]; then
 		echo "Continue with installation!" >&2; sleep 5
 	else
 		return 0
@@ -92,17 +90,19 @@ install_R(){
 	cmd="$cmd --enable-R-shlib"
 	if check_array $curr_host hutch uthsc; then
 		resp=
-		make_menu -y -p "With X11?"; read resp
+		make_menu -y -p "With X11?"; read -t 10 resp
 		[ ! -z $resp ] && [ $resp -eq 2 ] && cmd="$cmd --with-x=no"
 	fi
 	
 	eval $cmd >&2
-	[ ! $? -eq 0 ] && return 1
+	[ ! $? -eq 0 ] \
+		&& echo -e "${red}Error with configure${NC}" >&2 \
+		&& return 1
 	
 	resp=
-	make_menu -c "$white" -y -p "R-${version} make and install?"; read resp
-	[ -z $resp ] && return 1
-	[ ! $resp -eq 1 ] && return 1
+	make_menu -c "$white" -y -p "R-${version} make and install?"
+	read -t 10 resp
+	[ ! -z "$resp" ] && [ ! $resp -eq 1 ] && return 1
 	
 	make -j $ncores >&2 && make check >&2 \
 		&& make install >&2 && make install-tests >&2

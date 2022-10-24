@@ -57,11 +57,16 @@ install_openssl(){
 	eval $cmd >&2 || return 1
 	
 	# Install
+	local inst_zlib=$(echo $LD_LIBRARY_PATH \
+		| sed 's|:|\n|g' | grep zlib | sort \
+		| uniq | head -n 1 | sed 's|/lib||g')
 	cmd="$down_dir/config"
-	cmd="$cmd --prefix=$inst_dir"
-	# [ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
-	# [ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir --openssldir=$inst_dir/ssl"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
 	cmd="$cmd zlib shared"
+	cmd="$cmd --with-zlib-include=$inst_zlib/include"
+	cmd="$cmd --with-zlib-lib=$inst_zlib/lib"
 	cmd="$cmd >&2 && make >&2 && make test >&2"
 	cmd="$cmd && make install >&2"
 	eval $cmd
