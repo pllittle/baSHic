@@ -32,9 +32,10 @@ chkVer_R(){
 		| sed 's|R-||g' > $work_dir/R_major.txt
 	
 	while true; do
+		echo -e "R major versions:" >&2
+		cat $work_dir/R_major.txt \
+			| awk '{print "   "$0}' >&2
 		make_menu -c "$yellow" -p "Pick a major version (e.g. 4)"
-			cat $work_dir/R_major.txt \
-				| awk '{print "   "$0}' >&2
 		read resp
 		[ -z $resp ] && print_noInput && continue
 		check_array $resp $(seq 0 $(tail -n 1 $work_dir/R_major.txt))
@@ -63,9 +64,10 @@ chkVer_R(){
 		> $work_dir/R_minor.txt
 	
 	while true; do
+		echo -e "R minor versions:" >&2
+		cat $work_dir/R_minor.txt \
+			| awk '{print "   "$0}' >&2
 		make_menu -c "$yellow" -p "Pick a minor version (e.g. 1.0)"
-			cat $work_dir/R_minor.txt \
-				| awk '{print "   "$0}' >&2
 		read resp
 		[ -z $resp ] && print_noInput && continue
 		[ ! $(grep "$resp" $work_dir/R_minor.txt | wc -l) -eq 1 ] \
