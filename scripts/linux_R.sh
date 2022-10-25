@@ -50,13 +50,45 @@ chk_CRAN(){
 install_R(){
 	local version v1 pkg pkg_ver apps_dir status
 	local url inst_dir down_dir ncores resp cmd
+	local run_pack
 	
-	chk_CRAN
+	# chk_CRAN
 	
 	install_args $@ -p R -d 4.1.2; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	v1=`echo $version | cut -d '.' -f1`
 	url=https://cran.r-project.org/src/base/R-${v1}/R-${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/bin/R ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		local dirname
+		for dirname in lib lib64; do
+			[ ! -d $inst_dir/$dirname ] && continue
+			prep_pkgconfigs -p $pkg -d $inst_dir/$dirname/pkgconfig
+			[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+				&& return 1
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/$dirname"
+		done
+		update_env -e PATH -a "$inst_dir/bin"
+		return 0
+	fi
+	
+	# Run package
+	if [ $run_pack -eq 1 ]; then
+		[ ! -z "$LD_LIBRARY_PATH" ] \
+			&& [ ! $(echo $LD_LIBRARY_PATH | grep "$pkg_ver" | wc -l) -eq 0 ] \
+			&& return 0
+		cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+			ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
+		freetype pixman cairo gperf cmake perl openssl tex Python \
+		fontconfig R)
+		eval $cmd >&2 || return 1
+		return 0
+	fi
+	
 	
 	extract_url -u $url -a $apps_dir -s $pkg_ver
 	[ $? -eq 1 ] && return 0
