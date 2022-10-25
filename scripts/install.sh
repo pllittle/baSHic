@@ -1632,6 +1632,66 @@ install_nlopt(){
 	return $status
 	
 }
+install_harfbuzz(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir ncores load_env
+	local run_pack
+	
+	install_args $@ -p harfbuzz -d 2.5.3; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://www.freedesktop.org/software/harfbuzz
+	url=$url/release/harfbuzz-$version.tar.xz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -d $inst_dir/lib/pkgconfig ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
+		
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	# Run package
+	if [ $run_pack -eq 1 ]; then
+		[ ! -z "$LD_LIBRARY_PATH" ] \
+			&& [ ! $(echo $LD_LIBRARY_PATH | grep "$pkg_ver" | wc -l) -eq 0 ] \
+			&& return 0
+		cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+			zlib libpng freetype pixman cairo harfbuzz)
+		eval $cmd >&2 || return 1
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env -o
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+		zlib libpng freetype pixman cairo)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cmd="$down_dir/configure"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir >&2"
+	cmd="$cmd && make >&2 && make install >&2"
+	eval $cmd
+	
+	status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
 
 
 src_install=1

@@ -86,11 +86,10 @@ install_R(){
 		cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 			ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
 		freetype pixman cairo gperf cmake perl openssl tex Python \
-		fontconfig R)
+		fontconfig harfbuzz R)
 		eval $cmd >&2 || return 1
 		return 0
 	fi
-	
 	
 	extract_url -u $url -a $apps_dir -s $pkg_ver
 	[ $? -eq 1 ] && return 0
@@ -104,7 +103,7 @@ install_R(){
 	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
 		ncurses readline bzip2 xz pcre2 zlib curl libxml2 libpng \
 		freetype pixman cairo gperf cmake perl openssl tex Python \
-		fontconfig)
+		fontconfig harfbuzz)
 	# icu
 	eval $cmd >&2 || return 1
 	
