@@ -5,7 +5,7 @@
 
 [ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
 
-for fn in base colors getEnv; do
+for fn in base getEnv version; do
 	. $git_dir/baSHic/scripts/$fn.sh
 done
 
@@ -216,14 +216,18 @@ install_args(){
 	work_dir=$apps_dir/downloads
 	new_mkdir $apps_dir $work_dir
 	
+	# Check if package already present
 	if [ -z $version ]; then
 		show_exist_pkg -p $pkg -a $apps_dir >&2
 		[ ! $? -eq 0 ] && return 1
-		[ -z "$default" ] && make_menu -p "Which $pkg version?" \
+		[ -z "$default" ] \
+			&& make_menu -p "Which $pkg version?" \
 			|| make_menu -p "Which $pkg version? (e.g. $default)"
 		read version
 	fi
+	
 	status=$(which $pkg &> /dev/null; echo $?)
+	
 	if [ -z $version ]; then
 		echo -e "Checking for existing $pkg: status=$status ..." >&2
 		if [ ! $status -eq 0 ]; then
@@ -1097,7 +1101,8 @@ install_libpng(){
 	# Set environment
 	clear_env -o
 	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool \
+		zlib)
 	eval $cmd >&2 || return 1
 	
 	# Install
@@ -1142,7 +1147,8 @@ install_freetype(){
 	# Set environment
 	clear_env -o
 	local CPPFLAGS LDFLAGS; # CPPFLAGS=; LDFLAGS=;
-	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool
+		zlib libpng)
 	eval $cmd >&2 || return 1
 	
 	# Install
