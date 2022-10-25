@@ -67,9 +67,11 @@ install_R(){
 		local dirname
 		for dirname in lib lib64; do
 			[ ! -d $inst_dir/$dirname ] && continue
-			prep_pkgconfigs -p $pkg -d $inst_dir/$dirname/pkgconfig
-			[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
-				&& return 1
+			if [ -d $inst_dir/$dirname/pkgconfig ]; then
+				prep_pkgconfigs -p $pkg -d $inst_dir/$dirname/pkgconfig
+				[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+					&& return 1
+			fi
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/$dirname"
 		done
 		update_env -e PATH -a "$inst_dir/bin"
