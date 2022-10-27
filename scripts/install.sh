@@ -1692,6 +1692,65 @@ install_harfbuzz(){
 	return $status
 	
 }
+install_fribidi(){
+	local version pkg pkg_ver apps_dir status cmd
+	local url inst_dir down_dir ncores load_env
+	local run_pack
+	
+	install_args $@ -p fribidi -d 1.0.12; status=$?
+	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
+	url=https://github.com/fribidi/fribidi/archive
+	url=$url/refs/tags/v${version}.tar.gz
+	
+	# Load environment
+	if [ $load_env -eq 1 ]; then
+		[ ! -f $inst_dir/bin/$pkg ] \
+			&& echo -e "Install $pkg_ver" >&2 \
+			&& return 1
+		prep_pkgconfigs -p $pkg -d $inst_dir/lib/pkgconfig
+		[ ! $? -eq 0 ] && echo -e "pkg-config error with $pkg" >&2 \
+			&& return 1
+		update_env -e PATH -a "$inst_dir/bin"
+		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
+		return 0
+	fi
+	
+	# Run package
+	if [ $run_pack -eq 1 ]; then
+		[ ! -z "$PATH" ] \
+			&& [ ! $(echo $PATH | grep "$pkg_ver" | wc -l) -eq 0 ] \
+			&& return 0
+		cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+		eval $cmd >&2 || return 1
+		return 0
+	fi
+	
+	extract_url -u $url -a $apps_dir -s $pkg_ver
+	[ $? -eq 1 ] && return 0
+	new_mkdir $inst_dir
+	cd $inst_dir
+	
+	# Set environment
+	clear_env -o
+	local CPPFLAGS LDFLAGS
+	cmd=$(prep_env_cmd -a $apps_dir -p gcc libtool)
+	eval $cmd >&2 || return 1
+	
+	# Install
+	cd $down_dir
+	cmd="./autogen.sh"
+	[ ! -z "$CPPFLAGS" ] && cmd="$cmd CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$LDFLAGS" ] && cmd="$cmd LDFLAGS=\"$LDFLAGS\""
+	cmd="$cmd --prefix=$inst_dir -q >&2"
+	cmd="$cmd && make >&2 && make check >&2"
+	cmd="$cmd && make install >&2"
+	eval $cmd
+	
+	local status=$?
+	install_wrapup -s $status -i $inst_dir -d $down_dir
+	return $status
+	
+}
 
 
 src_install=1
