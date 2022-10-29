@@ -54,7 +54,7 @@ install_R(){
 	
 	# chk_CRAN
 	
-	install_args $@ -p R -d 4.1.2; status=$?
+	install_args $@ -p R -d 4.2.1; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	v1=`echo $version | cut -d '.' -f1`
 	url=https://cran.r-project.org/src/base/R-${v1}/R-${version}.tar.gz
@@ -228,11 +228,7 @@ run_R(){
 			# icu
 		R_dir=$apps_dir/R-$version/bin
 	elif check_array $curr_host uthsc; then
-		[ $(echo $LD_LIBRARY_PATH | grep "pixman" | wc -l) -eq 0 ] \
-			&& cmd=$(prep_env_cmd -p gcc libtool ncurses readline \
-				bzip2 xz pcre2 zlib curl libxml2 libpng freetype pixman \
-				cairo gperf cmake perl openssl tex Python fontconfig) \
-			&& eval $cmd >&2
+		install_R -r -v 4.2.1
 			# icu
 		R_dir=$apps_dir/R-$version/bin
 	else

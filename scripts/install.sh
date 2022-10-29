@@ -220,10 +220,15 @@ install_args(){
 	if [ -z $version ]; then
 		show_exist_pkg -p $pkg -a $apps_dir >&2
 		[ ! $? -eq 0 ] && return 1
-		[ -z "$default" ] \
-			&& make_menu -p "Which $pkg version?" \
-			|| make_menu -p "Which $pkg version? (e.g. $default)"
-		read version
+		if [ -z "$default" ]; then
+			make_menu -p "Which $pkg version?"
+			read version
+		else
+			make_menu -p "Which $pkg version? (e.g. $default)"
+			read -t 5 version
+			[ -z "$version" ] && version=$(echo $default \
+				| sed 's| ||g' | sed 's|,|\n|g' | tail -n 1)
+		fi
 	fi
 	
 	status=$(which $pkg &> /dev/null; echo $?)
@@ -702,7 +707,7 @@ install_readline(){
 	local url inst_dir down_dir ncores load_env
 	local run_pack
 	
-	install_args $@ -p readline -d 8.2; status=$?
+	install_args $@ -p readline -d "8.0, 8.2"; status=$?
 	[ $status -eq 2 ] && return 0; [ ! $status -eq 0 ] && return 1
 	url=https://ftp.gnu.org/gnu/readline/readline-${version}.tar.gz
 	
