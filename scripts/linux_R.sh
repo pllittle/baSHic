@@ -219,7 +219,7 @@ run_R(){
 	
 	# Define R_dir
 	if check_array $curr_host hutch; then
-		install_R -r
+		install_R -r -v 4.1.2
 		R_dir=$apps_dir/R-$version/bin
 	elif check_array $curr_host longleaf dogwood uthsc; then
 		install_R -r -v 4.2.1
