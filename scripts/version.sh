@@ -14,7 +14,7 @@ chkVer_GNU(){
 	local pkg exten nver
 	
 	while [ ! -z "$1" ]; do
-		case
+		case $1 in
 			-p | --pkg )
 				shift
 				pkg="$1"
