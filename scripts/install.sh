@@ -606,7 +606,6 @@ install_libtool(){
 		update_env -e PATH -a "$inst_dir/bin"
 		update_env -e LD_LIBRARY_PATH -a "$inst_dir/lib"
 		update_env -e CPATH -a "$inst_dir/include"
-		# export CPATH=$inst_dir/include
 		return 0
 	fi
 	
@@ -1756,6 +1755,7 @@ install_fribidi(){
 	return $status
 	
 }
+
 
 
 src_install=1
