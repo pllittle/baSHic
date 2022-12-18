@@ -83,10 +83,28 @@ print_noInput(){
 	sleep 0.1s
 }
 print_notOpt(){
-	local red=`get_color red`
-	local NC=`get_color`
-	echo -e "${red}Not an option, try again${NC}" >&2
+	local red NC mess
+	
+	while [ ! -z "$1" ]; do
+		case $1 in
+			-m | --mess )
+				shift
+				mess="$1"
+				;;
+		esac
+		shift
+	done
+	
+	red=`get_color red`
+	NC=`get_color`
+	if [ -z "$mess" ]; then
+		echo -e "${red}Not an option, try again${NC}" >&2
+	else
+		echo -e "${red}${mess}${NC}" >&2
+	fi
+	
 	sleep 0.1s
+	
 }
 print_notInt(){
 	local red=`get_color red`
