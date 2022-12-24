@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ ! -z $src_git ] && [ $src_git -eq 1 ] \
+[ ! -z $srcPL_git ] && [ $srcPL_git -eq 1 ] \
 	&& return 0
 
 [ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
@@ -76,7 +76,7 @@ install_go(){
 	
 }
 
-src_git=1
+srcPL_git=1
 
 ###
 

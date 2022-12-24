@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ ! -z $src_R ] && [ $src_R -eq 1 ] && return 0
+[ ! -z $srcPL_R ] && [ $srcPL_R -eq 1 ] && return 0
 
 [ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
 
@@ -306,6 +306,6 @@ run_R(){
 }
 
 
-src_R=1
+srcPL_R=1
 
 ###

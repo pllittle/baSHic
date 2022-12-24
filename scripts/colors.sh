@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ ! -z $src_color ] && [ $src_color -eq 1 ] \
+[ ! -z $srcPL_color ] && [ $srcPL_color -eq 1 ] \
 	&& return 0
 
 #### COLORS & FONT OPTIONS ####
@@ -266,7 +266,7 @@ make_menu(){
 	
 }
 
-src_color=1
+srcPL_color=1
 
 ###
 

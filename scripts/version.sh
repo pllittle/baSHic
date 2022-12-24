@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ ! -z $src_version ] && [ $src_version -eq 1 ] \
+[ ! -z $srcPL_version ] && [ $srcPL_version -eq 1 ] \
 	&& return 0
 
 [ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
@@ -162,7 +162,7 @@ chkVer_R(){
 }
 
 
-src_version=1
+srcPL_version=1
 
 ###
 

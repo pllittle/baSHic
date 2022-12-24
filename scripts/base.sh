@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ ! -z $src_bash ] && [ $src_bash -eq 1 ] \
+[ ! -z $srcPL_bash ] && [ $srcPL_bash -eq 1 ] \
 	&& return 0
 
 [ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
@@ -17,13 +17,12 @@ new_mkdir(){
 }
 new_rm(){
 	local obj
-	# echo "Cleaning out old files.", older name "fileExistsThenDelete"
+	
 	for obj in $@; do
-		# [ -f $obj -o -d $obj ] && rm -rf $obj
-		if [ -d $obj ]; then
-			rm -rf $obj
-		elif [ -f $obj ]; then
-			rm $obj
+		if [ -d "$obj" ]; then
+			rm -rf "$obj"
+		elif [ -f "$obj" ]; then
+			rm "$obj"
 		fi
 	done
 }
@@ -65,15 +64,6 @@ smart_sed(){
 		esac
 		shift
 	done
-	
-	if [ 1 -eq 2 ]; then
-		# Real code example to model off of
-		cat $1 | sed "s|blah_WF|${curr_host}|g" \
-			| sed "s|blah_doing|$doing|g" | sed "s|blah_dataset|${dataset}|g" \
-			| sed "s|blah_trim|$trim|g" | sed "s|blah_perm|$perm|g" \
-			| sed "s|blah_anaFilter|$anafilter|g" | sed "s|blah_ENSG|$ENSG|g" \
-			> $2
-	fi
 	
 	# Formulate cmd
 	cmd="cat $input_fn"
@@ -204,7 +194,7 @@ make_aaRun(){
 	[ -z "$dir" ] && echo "Add -d <project_dir>" >&2 && return 1
 	[ -z "$fn" ] 	&& echo "Add -f <filename>" >&2 && return 1
 	
-	[ -f $dir/aa_run.sh ] && return 1
+	[ -f $dir/aa_run.sh ] && return 0
 	[ ! -f $fn ] && echo -e "$fn missing" >&2 && return 1
 	
 	echo "Making aa_run.sh script ..." >&2
@@ -227,6 +217,6 @@ git_cache(){
 	return 0
 }
 
-src_bash=1
+srcPL_bash=1
 
 ###

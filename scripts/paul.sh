@@ -6,6 +6,7 @@
 
 for fn in getEnv; do
 	. $git_dir/baSHic/scripts/$fn.sh
+	[ ! $? -eq 0 ] && echo -e "Error src-ing $fn" >&2 && return 1
 done
 
 get_paul_dir(){
@@ -26,10 +27,6 @@ get_paul_dir(){
 		paul_dir=/fh/scratch/delete90/sun_w/plittle
 	elif check_array $curr_host uthsc_compute uthsc; then
 		paul_dir=/scratch/primary/UTHSC/Current_members/Paul_Little
-	elif [ "$curr_host" == "instcbio" ]; then
-		paul_dir=/home/sonicsaver911
-	elif [ "$curr_host" == "instAWScbio" ]; then
-		paul_dir=/home/ubuntu
 	else
 		print_notOpt
 		exit 0

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ ! -z $src_install ] && [ $src_install -eq 1 ] \
+[ ! -z $srcPL_install ] && [ $srcPL_install -eq 1 ] \
 	&& return 0
 
 [ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
@@ -1756,9 +1756,7 @@ install_fribidi(){
 	
 }
 
-
-
-src_install=1
+srcPL_install=1
 
 ###
 

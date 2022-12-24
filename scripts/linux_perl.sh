@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ ! -z $src_perl ] && [ $src_perl -eq 1 ] \
+[ ! -z $srcPL_perl ] && [ $srcPL_perl -eq 1 ] \
 	&& return 0
 
 [ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
@@ -200,7 +200,7 @@ remove_cpanm_module(){
 	cpanm --uninstall $module >&2
 }
 
-src_perl=1
+srcPL_perl=1
 
 ###
 

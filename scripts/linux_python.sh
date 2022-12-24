@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ ! -z $src_python ] && [ $src_python -eq 1 ] \
+[ ! -z $srcPL_python ] && [ $srcPL_python -eq 1 ] \
 	&& return 0
 
 [ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
@@ -367,8 +367,7 @@ install_boost(){
 	
 }
 
-
-src_python=1
+srcPL_python=1
 
 ###
 

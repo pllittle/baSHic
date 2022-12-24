@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ ! -z $src_genomic ] && [ $src_genomic -eq 1 ] \
+[ ! -z $srcPL_genomic ] && [ $srcPL_genomic -eq 1 ] \
 	&& return 0
 
 [ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
@@ -669,7 +669,7 @@ run_VEP(){
 }
 
 
-src_genomic=1
+srcPL_genomic=1
 
 ###
 
