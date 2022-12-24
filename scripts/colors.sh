@@ -260,7 +260,7 @@ make_menu(){
 	# Print prompt and options
 	echo -ne "${color}${prompt} \n${mytab}" >&2
 	for option in "${options[@]}"; do
-		echo -ne "${color}$option \n${mytab}" >&2
+		echo -ne "${color}${option}${color} \n${mytab}" >&2
 	done
 	echo -ne "${color}> ${NC}" >&2
 	
