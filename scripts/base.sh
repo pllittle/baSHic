@@ -217,6 +217,89 @@ git_cache(){
 	return 0
 }
 
+getRepoSrc(){
+	local uname repo repo_dir orig_dir
+	local script scripts nvalues cnt resp
+	cnt=0
+	
+	while [ ! -z "$1" ]; do
+		case $1 in
+			-r | --repo )
+				shift
+				repo="$1"
+				;;
+			-s | --scripts )
+				while [ ! -z "$2" ]; do
+					case $2 in
+						-* )
+							break
+							;;
+						* )
+							scripts[cnt]="$2"
+							let cnt=cnt+1
+							shift
+							;;
+					esac
+				done
+				;;
+			-u | --uname )
+				shift
+				uname="$1"
+				;;
+		esac
+		shift
+	done
+	
+	# Check inputs
+	[ -z "$git_dir" ] && echo "Define git_dir variable" >&2 \
+		&& return 1
+	while [ -z "$repo" ]; do
+		make_menu -c "$yellow" -p "Specify a repository name:"
+		read resp
+		[ -z "$resp" ] && print_noInput && continue
+		repo="$resp"
+	done
+	while [ -z "$uname" ]; do
+		make_menu -c "$yellow" -p "Specify the username of $repo:"
+		read resp
+		[ -z "$resp" ] && print_noInput && continue
+		uname="$resp"
+	done
+	nvalues=${#scripts[@]}
+	
+	# Set vars
+	repo_dir="$git_dir/$repo"
+	orig_dir=$(pwd)
+
+	if [ ! -d "$repo_dir" ]; then
+		cd "$git_dir"
+		git clone https://github.com/$uname/$repo.git >&2
+		[ ! $? -eq 0 ] && echo -e "Error cloning $repo" >&2 && return 1
+	else
+		cd "$repo_dir"
+		git pull >&2
+		[ ! $? -eq 0 ] && echo -e "Error pulling $repo" >&2 && return 1
+	fi
+	
+	cd "$orig_dir"
+	[ $nvalues -eq 0 ] && return 0
+	
+	for script in "${scripts[@]}"; do
+		
+		[ ! -f "$repo_dir/$script" ] \
+			&& echo -e "Error: $repo's $script missing" >&2 \
+			&& return 1
+		
+		. "$repo_dir/$script"
+		[ ! $? -eq 0 ] && echo -e "Error src-ing $repo's $script" >&2 \
+			&& return 1
+		
+	done
+	
+	return 0
+	
+}
+
 srcPL_bash=1
 
 ###
