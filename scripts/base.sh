@@ -103,12 +103,16 @@ check_array(){
 }
 pull_repos(){
 	local git_dir cnt userrepo userrepos resp group repo
-	local myuser
+	local myuser cloneMeth orig_dir
 	local pull=no
 	cnt=0
 	
 	while [ ! -z "$1" ]; do
 		case $1 in
+			-c | --cloneMeth )
+				shift
+				cloneMeth="$1"
+				;;
 			-g | --git_dir )
 				shift
 				git_dir="$1"
@@ -135,12 +139,16 @@ pull_repos(){
 		shift
 	done
 	
+	[ -z "$cloneMeth" ] && cloneMeth=HTTPS
 	[ -z "$git_dir" ] && echo "Add -g <git directory>" >&2 && return 1
 	[ -z "${userrepos[0]}" ] && echo "Add -r group1/repo1 group2/repo2" >&2 && return 1
 	[ -z "$myuser" ] && echo "Add -m <GitHub username>" >&2 && return 1
+	check_array "$cloneMeth" HTTPS SSH
+	[ ! $? -eq 0 ] && echo "cloneMeth is either HTTPS or SSH" >&2 && return 1
 	
-	new_mkdir $git_dir
+	new_mkdir "$git_dir"
 	unset SSH_ASKPASS
+	orig_dir=$(pwd)
 	
 	for userrepo in "${userrepos[@]}"; do
 		group=$(echo $userrepo | cut -d '/' -f1)
@@ -149,14 +157,19 @@ pull_repos(){
 		read -t 5 resp
 		[ -z $resp ] && resp=1 && echo -e "${white}$resp${NC}" >&2
 		if [ $resp -eq 1 ]; then
-			if [ ! -d $git_dir/$repo ]; then
-				cd $git_dir
-				git clone https://github.com/$group/$repo.git >&2
+			if [ ! -d "$git_dir/$repo" ]; then
+				cd "$git_dir"
+				if [ "$cloneMeth" == "HTTPS" ]; then
+					git clone https://github.com/$userrepo.git >&2
+				else
+					git clone git@github.com:$userrepo.git >&2
+				fi
+				[ ! $? -eq 0 ] && echo -e "Error cloning $userrepo" >&2 && return 1
 			else
-				cd $git_dir/$repo
+				cd "$git_dir/$repo"
 				new_rm ~/pull.out
 				# git pull > ~/pull.out
-				git pull https://$myuser@github.com/$group/$repo > ~/pull.out
+				git pull https://$myuser@github.com/$userrepo > ~/pull.out
 				cat ~/pull.out >&2
 				if [ "$pull" == "no" ] && [ $(cat ~/pull.out | grep -m 1 "Already up" | wc -l) -eq 1 ]; then
 					pull=no
@@ -168,11 +181,12 @@ pull_repos(){
 	done
 	
 	new_rm ~/pull.out
+	cd "$orig_dir"
 	[ "$pull" == "yes" ] && exit 0
 	
 }
 show_PATH(){
-	echo $PATH | sed 's/:/\n/g' >&2
+	echo $PATH | sed 's|:|\n|g' >&2
 }
 make_aaRun(){
 	local dir fn

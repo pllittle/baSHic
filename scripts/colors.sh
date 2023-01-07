@@ -77,10 +77,23 @@ color_code(){
 	echo -e "${purple}RE-RUNNING${NC}" >&2
 }
 print_noInput(){
-	local red=`get_color red`
-	local NC=`get_color`
-	echo -e "${red}No input, try again${NC}" >&2
+	local mess
+	
+	while [ ! -z "$1" ]; do
+		case $1 in
+			-m | --mess )
+				shift
+				mess="$1"
+				;;
+		esac
+		shift
+	done
+	
+	[ -z "$mess" ] && mess="No input, try again"
+	
+	echo -e "${red}${mess}${NC}" >&2
 	sleep 0.1s
+	
 }
 print_notOpt(){
 	local red NC mess
@@ -95,22 +108,17 @@ print_notOpt(){
 		shift
 	done
 	
-	red=`get_color red`
-	NC=`get_color`
-	if [ -z "$mess" ]; then
-		echo -e "${red}Not an option, try again${NC}" >&2
-	else
-		echo -e "${red}${mess}${NC}" >&2
-	fi
+	[ -z "$mess" ] && mess="Not an option, try again"
 	
+	echo -e "${red}${mess}${NC}" >&2
 	sleep 0.1s
 	
 }
 print_notInt(){
-	local red=`get_color red`
-	local NC=`get_color`
+	
 	echo -e "${red}Not an integer, try again${NC}" >&2
 	sleep 0.1s
+	
 }
 check_noInput(){
 	if [ -z $1 ]; then
@@ -263,6 +271,12 @@ make_menu(){
 		echo -ne "${color}${option}${color} \n${mytab}" >&2
 	done
 	echo -ne "${color}> ${NC}" >&2
+	
+}
+
+make_PS1(){
+	echo "An example ..." >&2
+	echo "PS1='\e[1;32m\u\e[1;37m@\e[0;36m\h \e[1;35m\W\e[1;33m\`__git_ps1\`\e[0m\n$ '" >&2
 	
 }
 
