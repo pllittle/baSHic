@@ -168,8 +168,8 @@ pull_repos(){
 			else
 				cd "$git_dir/$repo"
 				new_rm ~/pull.out
-				# git pull > ~/pull.out
-				git pull https://$myuser@github.com/$userrepo > ~/pull.out
+				git pull > ~/pull.out
+				# git pull https://$myuser@github.com/$userrepo > ~/pull.out
 				cat ~/pull.out >&2
 				if [ "$pull" == "no" ] && [ $(cat ~/pull.out | grep -m 1 "Already up" | wc -l) -eq 1 ]; then
 					pull=no
