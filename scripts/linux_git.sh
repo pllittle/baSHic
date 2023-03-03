@@ -86,6 +86,9 @@ check_repoStat(){
 		cd "$git_dir/$repo"
 		echo -ne "Checking ${yellow}$repo${NC} " >&2
 		
+		[ $(git status 2>&1 | grep "not a git repository" | wc -l) -gt 0 ] \
+			&& echo -e "${purple}(not a repo)${NC}" >&2 && continue
+			
 		[ $(git status | grep "git add" | wc -l) -gt 0 ] \
 			&& echo -e "${red}(out of sync, 'git add')${NC}" >&2 && continue
 		
@@ -95,10 +98,10 @@ check_repoStat(){
 		[ $(git status | grep -- "to publish your local commits" | wc -l) -gt 0 ] \
 			&& echo -e "${red}(out of sync, 'git push')${NC}" >&2 && continue
 		
-		[ $(git status | grep "modified:" | wc -l) -gt 0 ] \
+		[ $(git status | grep -- "modified:" | wc -l) -gt 0 ] \
 			&& echo -e "${red}(out of sync)${NC}" >&2 && continue
 		
-		[ $(git status | grep "up to date" | wc -l) -eq 1 ] \
+		[ $(git status | grep -- "up to date" | wc -l) -eq 1 ] \
 			&& echo -e "${green}(synced)${NC}" >&2 && continue
 		
 		echo -e "${red}(out of sync)${NC}" >&2
