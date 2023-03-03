@@ -273,6 +273,31 @@ make_menu(){
 	echo -ne "${color}> ${NC}" >&2
 	
 }
+clean_envSrc(){
+	local keyw cmd tmpvar
+	
+	while [ ! -z "$1" ]; do
+		case $1 in
+			-k | --keyw )
+				shift
+				keyw="$1"
+				;;
+		esac
+		shift
+	done
+	
+	[ -z "$keyw" ] && keyw=srcPL_
+	
+	cmd="unset"
+	for tmpvar in $(declare -p | grep "$keyw" \
+		| cut -d ' ' -f3 | cut -d '=' -f1); do
+		cmd="$cmd $tmpvar"
+	done
+	
+	# echo -e "$cmd" >&2
+	eval $cmd
+	
+}
 
 make_PS1(){
 	echo "An example ..." >&2
