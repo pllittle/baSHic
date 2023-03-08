@@ -77,37 +77,45 @@ install_go(){
 }
 
 check_repoStat(){
-	local repo orig_dir
+	local repo orig_dir tmp_fn
 	
+	[ -z "$git_dir" ] && echo "git_dir undefined" >&2 && return 1
 	orig_dir=$(pwd)
+	tmp_fn="$git_dir/gstat.out"
 	
 	cd "$git_dir"
 	for repo in $(ls | sed 's|/$||g'); do
+		[ ! -d "$git_dir/$repo" ] && continue
+		
 		cd "$git_dir/$repo"
 		echo -ne "Checking ${yellow}$repo${NC} " >&2
 		
-		[ $(git status 2>&1 | grep "not a git repository" | wc -l) -gt 0 ] \
-			&& echo -e "${purple}(not a repo)${NC}" >&2 && continue
+		new_rm "$tmp_fn"
+		git status &> "$tmp_fn"
+		
+		[ $(cat "$tmp_fn" | grep "not a git repository" | wc -l) -gt 0 ] \
+			&& echo -e "(${purple}not a repo${NC})" >&2 && continue
 			
-		[ $(git status | grep "git add" | wc -l) -gt 0 ] \
+		[ $(cat "$tmp_fn" | grep "git add" | wc -l) -gt 0 ] \
 			&& echo -e "${red}(out of sync, 'git add')${NC}" >&2 && continue
 		
-		[ $(git status | grep -- "git restore --staged" | wc -l) -gt 0 ] \
+		[ $(cat "$tmp_fn" | grep -- "git restore --staged" | wc -l) -gt 0 ] \
 			&& echo -e "${red}(out of sync, 'git commit -m')${NC}" >&2 && continue
 		
-		[ $(git status | grep -- "to publish your local commits" | wc -l) -gt 0 ] \
+		[ $(cat "$tmp_fn" | grep -- "to publish your local commits" | wc -l) -gt 0 ] \
 			&& echo -e "${red}(out of sync, 'git push')${NC}" >&2 && continue
 		
-		[ $(git status | grep -- "modified:" | wc -l) -gt 0 ] \
+		[ $(cat "$tmp_fn" | grep -- "modified:" | wc -l) -gt 0 ] \
 			&& echo -e "${red}(out of sync)${NC}" >&2 && continue
 		
-		[ $(git status | grep -- "up to date" | wc -l) -eq 1 ] \
+		[ $(cat "$tmp_fn" | grep -- "up to date" | wc -l) -eq 1 ] \
 			&& echo -e "${green}(synced)${NC}" >&2 && continue
 		
 		echo -e "${red}(out of sync)${NC}" >&2
 		
 	done
 	
+	new_rm "$tmp_fn"
 	cd "$orig_dir"
 	return 0
 	
