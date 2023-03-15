@@ -11,23 +11,40 @@ done
 
 new_mkdir(){
 	local ijk
-	for ijk in $@; do
-		[ ! -d $ijk ] && mkdir $ijk
+	
+	for ijk in "$@"; do
+		if [ ! -d "$ijk" ]; then
+			mkdir "$ijk"
+			[ ! $? -eq 0 ] && echo -e "Error mkdir-ing for $ijk" >&2 && return 1
+		fi
 	done
+	
+	return 0
+	
 }
 new_rm(){
 	local obj
 	
-	for obj in $@; do
+	for obj in "$@"; do
 		if [ -d "$obj" ]; then
 			rm -rf "$obj"
+			[ ! $? -eq 0 ] && echo -e "Error rm-ing directory = $obj" >&2 && return 1
 		elif [ -f "$obj" ]; then
-			rm "$obj"
+			rm -f "$obj"
+			[ ! $? -eq 0 ] && echo -e "Error rm-ing file = $obj" >&2 && return 1
 		fi
 	done
+	
+	return 0
+	
 }
 new_dosUnix(){
-	dos2unix $@ 2> /dev/null > /dev/null
+	local obj
+	
+	for obj in "$@"; do
+		dos2unix "$obj" &> /dev/null
+	done
+	
 }
 smart_sed(){
 	local cmd input_fn output_fn sub subs chost
