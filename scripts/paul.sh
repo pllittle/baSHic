@@ -13,7 +13,6 @@ get_paul_dir(){
 	local paul_dir
 	
 	if [ "$curr_host" == "longleaf" ]; then
-		# paul_dir=/pine/scr/p/l/pllittle
 		paul_dir=/work/users/p/l/pllittle
 	elif [ "$curr_host" == "dogwood" ]; then
 		paul_dir=/21dayscratch/scr/p/l/pllittle
