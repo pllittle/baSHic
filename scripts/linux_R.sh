@@ -232,9 +232,10 @@ run_R(){
 	[ ! -f $R_dir/R ] && echo -e "$R_dir/R missing" >&2 && return 1
 	
 	if [ "$use" == "batch" ]; then
-		[ -z $script ] && echo "Add -s <R script>" >&2 && return 1
-		[ -f $script.Rout ] && rm $script.Rout
-		[ -f $script.log ] && rm $script.log
+		[ -z "$script" ] && echo "Add -s <R script>" >&2 && return 1
+		[ ! -f "$script.R" ] && echo "R script missing" >&2 && return 1
+		[ -f "$script.Rout" ] && rm "$script.Rout"
+		[ -f "$script.log" ] && rm "$script.log"
 		[ -z "$job_name" ] && echo "Add -n <R job name>" >&2 && return 1
 		
 		# Run job
