@@ -215,13 +215,17 @@ install_strelka2(){
 install_VEP(){
 	# Source: https://m.ensembl.org/info/docs/tools/vep/script/vep_download.html
 	local url apps_dir inst_dir perl_dir status
-	local release module resp cmd
+	local release module resp cmd cache_dir
 	
 	while [ ! -z "$1" ]; do
 		case $1 in
 			-a | --apps_dir )
 				shift
 				apps_dir="$1"
+				;;
+			-c | --cache_dir )
+				shift
+				cache_dir="$1"
 				;;
 			-g | --genome )
 				shift
@@ -237,11 +241,12 @@ install_VEP(){
 	
 	[ -z $apps_dir ] 	&& apps_dir=$HOME/apps
 	if [ -z $release ]; then
-		make_menu -p "Which release of VEP to install on? (e.g. 105, 106)"
+		make_menu -p "Which release of VEP to install on? (e.g. 105, 106, 111)"
 		read release
 	fi
 	[ -z "$release" ] && echo "Error release missing, exitting" >&2 && return 1
 	inst_dir=$apps_dir/vep-$release
+	[ -z "$cache_dir" ] && echo "Add -c <cache_dir>" >&2 && return 1
 	
 	cd $apps_dir
 	if [ ! -d $inst_dir ]; then
@@ -271,6 +276,8 @@ install_VEP(){
 		
 	fi
 	
+	# Add code to check for mysql_config
+	
 	# Install Perl modules
 	install_perl_modules -a $apps_dir \
 		-d expat db bzip2 xz zlib curl htslib \
@@ -290,8 +297,9 @@ install_VEP(){
 	eval $cmd >&2 || return 1
 	
 	# VEP install and download cached database files (# 460) and plugins (gnomad)
-	cd $inst_dir
-	cmd="perl INSTALL.pl --NO_HTSLIB --CACHEDIR $inst_dir"
+	[ ! -d "$cache_dir" ] && mkdir "$cache_dir"
+	cd $cache_dir
+	cmd="perl INSTALL.pl --NO_HTSLIB --CACHEDIR $cache_dir"
 	eval $cmd >&2
 	[ ! $? -eq 0 ] && echo -e "Error in VEP installation" >&2 && return 1
 	
