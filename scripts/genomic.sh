@@ -303,6 +303,10 @@ install_VEP(){
 	eval $cmd >&2
 	[ ! $? -eq 0 ] && echo -e "Error in VEP installation" >&2 && return 1
 	
+	# Notes on gnomad
+	## refer to $cache_dir/Plugins/gnomADc.pm
+	
+	
 	return 0
 	
 }
