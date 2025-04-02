@@ -4,9 +4,11 @@
 
 [ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
 
-for fn in install linux_latex \
-	linux_perl linux_python; do
-	. $git_dir/baSHic/scripts/$fn.sh
+for fn in install linux_latex linux_perl linux_python; do
+	. "$git_dir/baSHic/scripts/$fn.sh"
+	[ $? -eq 0 ] && continue
+	echo -e "Error src-ing baSHic's $fn.sh" >&2
+	return 1
 done
 
 # Installation

@@ -5,8 +5,10 @@
 [ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
 
 for fn in getEnv; do
-	. $git_dir/baSHic/scripts/$fn.sh
-	[ ! $? -eq 0 ] && echo -e "Error src-ing $fn" >&2 && return 1
+	. "$git_dir/baSHic/scripts/$fn.sh"
+	[ $? -eq 0 ] && continue
+	echo -e "Error src-ing baSHic's $fn.sh" >&2
+	return 1
 done
 
 get_paul_dir(){
