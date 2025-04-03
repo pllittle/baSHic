@@ -6,7 +6,10 @@
 [ -z "$git_dir" ] && git_dir=$(cd $(dirname $BASH_SOURCE)/../..; pwd)
 
 for fn in base getEnv version; do
-	. $git_dir/baSHic/scripts/$fn.sh
+	. "$git_dir/baSHic/scripts/$fn.sh"
+	[ $? -eq 0 ] && continue
+	echo -e "Some error in src-ing baSHic's $fn script" >&2
+	return 1
 done
 
 # Fundamental install functions
